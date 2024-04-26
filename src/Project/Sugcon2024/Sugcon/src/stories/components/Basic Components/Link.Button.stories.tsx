@@ -23,9 +23,10 @@ export const Button: Story = {
         value: {
           href: 'https://www.google.com',
           text: 'Register Now',
-          linktype: 'external',
+          linktype: 'external'
         },
       },
     },
   },
 };
+

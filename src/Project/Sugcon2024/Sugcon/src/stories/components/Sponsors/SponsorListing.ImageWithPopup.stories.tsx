@@ -5,6 +5,7 @@ import { Default as DefaultSponsorListing } from './SponsorListing.Default.stori
 
 const meta = {
   title: 'Sponsors/SponsorListing',
+  
   component: LogoWithPopup,
   parameters: {
     layout: 'padded',

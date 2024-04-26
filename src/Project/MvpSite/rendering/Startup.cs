@@ -55,7 +55,7 @@ namespace Mvp.Project.MvpSite
               .AddGraphQlHandler("default", Configuration.DefaultSiteName!, Configuration.ExperienceEdgeToken!, Configuration.LayoutServiceUri!)
               .AsDefaultHandler();
 
-            services.AddFeatureUser(DotNetConfiguration);
+            // services.AddFeatureUser(DotNetConfiguration);
 
             // Register the Sitecore Rendering Engine services.
             services.AddSitecoreRenderingEngine(options =>
@@ -162,7 +162,7 @@ namespace Mvp.Project.MvpSite
                   new { controller = "Default", action = "Healthz" }
                 );
 
-                endpoints.MapOktaSigninRoute();
+                // endpoints.MapOktaSigninRoute();
 
                 endpoints.MapControllerRoute(
                     "MvpProfileWithCulture",

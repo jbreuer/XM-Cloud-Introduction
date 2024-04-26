@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Mvp.Project.MvpSite.Middleware;
 using Mvp.Project.MvpSite.Models;
+using Newtonsoft.Json.Linq;
 using Okta.AspNetCore;
 using Sitecore.AspNet.RenderingEngine;
 using Sitecore.LayoutService.Client.Exceptions;
+using Sitecore.LayoutService.Client.Newtonsoft.Model;
 using Sitecore.LayoutService.Client.Response.Model;
 using Sitecore.LayoutService.Client.Response.Model.Fields;
 
@@ -23,6 +25,25 @@ namespace Mvp.Project.MvpSite.Controllers
         {
             IActionResult result = null;
             ISitecoreRenderingContext request = HttpContext.GetSitecoreRenderingContext();
+            
+            // request.Response.Content.Sitecore.Route.Placeholders
+
+            var req = request.Response.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var main);
+
+            Placeholder mainPlaceholder = main as Placeholder;
+            foreach (Component component in mainPlaceholder)
+            {
+                var fields = component.Fields;
+    
+                if (fields.TryGetValue("HeroImage", out var fieldReader))
+                {
+                    var heroImage = fieldReader.Read<ImageField>();
+                }
+            }
+
+
+            // var test = Sitecore.LayoutService.Client.DefaultLayoutClient
+            
             if (request.Response?.HasErrors ?? false)
             {
                 foreach (SitecoreLayoutServiceClientException error in request.Response.Errors)

@@ -23,7 +23,11 @@ import {
 } from '@chakra-ui/react';
 import clsx from 'clsx';
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
-import { HeaderHeights, PaddingX, PaddingY } from 'template/LayoutConstants';
+import {
+  HeaderHeights,
+  PaddingX,
+  PaddingY,
+} from 'template/LayoutConstants';
 
 export interface Fields {
   Id: string;
@@ -35,6 +39,7 @@ export interface Fields {
   Children?: Fields[];
   Styles: string[];
 }
+
 
 export type NavigationProps = {
   params?: ComponentParams;
@@ -149,7 +154,7 @@ const ResponsiveNavigation = ({
   navigationMenuItems,
   onToggle,
   pageEditing,
-  rendering,
+  rendering
 }: ResponsiveNavigationProps): JSX.Element => {
   return (
     <Box as="nav" role="navigation" aria-label="SUGCON" ml={{ base: 0, lg: 'auto' }}>

@@ -27,5 +27,7 @@ export const Default = (props: LinkProps): JSX.Element => {
 };
 
 export const Button = (props: LinkProps): JSX.Element => {
-  return <ButtonLink field={props.fields.Link} />;
+  return (
+    <ButtonLink field={props.fields.Link} />
+  );
 };
