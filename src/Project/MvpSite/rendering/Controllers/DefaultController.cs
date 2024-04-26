@@ -37,7 +37,7 @@ namespace Mvp.Project.MvpSite.Controllers
     
                 if (fields.TryGetValue("HeroImage", out var fieldReader))
                 {
-                    var heroImage = fieldReader.Read<ImageField>();
+                    var heroImage = fieldReader.Read<ImageField>(); 
                 }
             }
 
