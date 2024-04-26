@@ -56,7 +56,7 @@ namespace Mvp.Project.MvpSite.Controllers
             {
                 { "sc_site", "mvp-site" },
                 { "sc_apikey", "{E2F3D43E-B1FD-495E-B4B1-84579892422A}" },
-                { "item", "/" },
+                { "item", "/About" },
                 { "sc_lang", "en" }
             };
             var test = await _layoutClient.Request(sitecoreLayoutRequest);
