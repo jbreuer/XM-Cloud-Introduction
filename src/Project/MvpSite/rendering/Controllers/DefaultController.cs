@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -7,21 +8,31 @@ using Mvp.Project.MvpSite.Models;
 using Newtonsoft.Json.Linq;
 using Okta.AspNetCore;
 using Sitecore.AspNet.RenderingEngine;
+using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Exceptions;
 using Sitecore.LayoutService.Client.Newtonsoft.Model;
+using Sitecore.LayoutService.Client.Request;
 using Sitecore.LayoutService.Client.Response.Model;
 using Sitecore.LayoutService.Client.Response.Model.Fields;
 
 namespace Mvp.Project.MvpSite.Controllers
 {
-    public class DefaultController(ILogger<DefaultController> logger)
-        : Controller
+    public class DefaultController : Controller
     {
+        private readonly ISitecoreLayoutClient _layoutClient;
+        private readonly ILogger<DefaultController> _logger;
+
+        public DefaultController(ISitecoreLayoutClient layoutClient, ILogger<DefaultController> logger)
+        {
+            _layoutClient = layoutClient;
+            _logger = logger;
+        }
+        
         // Inject Sitecore rendering middleware for this controller action
         // (enables model binding to Sitecore objects such as Route,
         // and causes requests to the Sitecore Layout Service for controller actions)
         [UseMvpSiteRendering]
-        public IActionResult Index(LayoutViewModel model)
+        public async Task<IActionResult> Index(LayoutViewModel model)
         {
             IActionResult result = null;
             ISitecoreRenderingContext request = HttpContext.GetSitecoreRenderingContext();
@@ -41,6 +52,15 @@ namespace Mvp.Project.MvpSite.Controllers
                 }
             }
 
+            var sitecoreLayoutRequest = new SitecoreLayoutRequest
+            {
+                { "sc_site", "mvp-site" },
+                { "sc_apikey", "{E2F3D43E-B1FD-495E-B4B1-84579892422A}" },
+                { "item", "/" },
+                { "sc_lang", "en" }
+            };
+            var test = await _layoutClient.Request(sitecoreLayoutRequest);
+
 
             // var test = Sitecore.LayoutService.Client.DefaultLayoutClient
             
@@ -51,7 +71,7 @@ namespace Mvp.Project.MvpSite.Controllers
                     switch (error)
                     {
                         default:
-                            logger.LogError(error, error.Message);
+                            _logger.LogError(error, error.Message);
                             throw error;
                     }
                 }
