@@ -105,8 +105,7 @@ namespace Mvp.Project.MvpSite.Controllers
             };
             
             var json = JsonConvert.SerializeObject(test.Content, jsonSettings);
-            return Content(json);
-
+            return Content(json, "application/json");
 
             // var test = Sitecore.LayoutService.Client.DefaultLayoutClient
             

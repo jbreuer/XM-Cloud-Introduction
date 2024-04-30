@@ -55,9 +55,6 @@ namespace Mvp.Project.MvpSite
             services.AddSitecoreLayoutService()
               .AddGraphQlHandler("default", Configuration.DefaultSiteName!, Configuration.ExperienceEdgeToken!, Configuration.LayoutServiceUri!)
               .AsDefaultHandler();
-            
-            services.AddSingleton<ISitecoreLayoutSerializer, CustomLayoutServiceSerializer>();
-
             // services.AddFeatureUser(DotNetConfiguration);
 
             // Register the Sitecore Rendering Engine services.
