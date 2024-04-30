@@ -1,15 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Mvp.Project.MvpSite.Middleware;
 using Mvp.Project.MvpSite.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Okta.AspNetCore;
 using Sitecore.AspNet.RenderingEngine;
 using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Exceptions;
+using Sitecore.LayoutService.Client.Newtonsoft;
+using Sitecore.LayoutService.Client.Newtonsoft.Converters;
 using Sitecore.LayoutService.Client.Newtonsoft.Model;
 using Sitecore.LayoutService.Client.Request;
 using Sitecore.LayoutService.Client.Response.Model;
@@ -20,11 +24,13 @@ namespace Mvp.Project.MvpSite.Controllers
     public class DefaultController : Controller
     {
         private readonly ISitecoreLayoutClient _layoutClient;
+        private readonly ISitecoreLayoutSerializer _serializer;
         private readonly ILogger<DefaultController> _logger;
 
-        public DefaultController(ISitecoreLayoutClient layoutClient, ILogger<DefaultController> logger)
+        public DefaultController(ISitecoreLayoutClient layoutClient, ISitecoreLayoutSerializer serializer, ILogger<DefaultController> logger)
         {
             _layoutClient = layoutClient;
+            _serializer = serializer;
             _logger = logger;
         }
         
@@ -50,6 +56,11 @@ namespace Mvp.Project.MvpSite.Controllers
                 {
                     var heroImage = fieldReader.Read<ImageField>(); 
                 }
+                
+                if (fields.TryGetValue("HeroTitle", out var fieldReaderHeroTitle))
+                {
+                    var heroTitle = fieldReaderHeroTitle.Read<TextField>();
+                }
             }
 
             var sitecoreLayoutRequest = new SitecoreLayoutRequest
@@ -60,6 +71,35 @@ namespace Mvp.Project.MvpSite.Controllers
                 { "sc_lang", "en" }
             };
             var test = await _layoutClient.Request(sitecoreLayoutRequest);
+            
+            var json = JsonConvert.SerializeObject(test.Content, Formatting.Indented, new JsonSerializerSettings {
+                NullValueHandling = NullValueHandling.Include
+            });
+            
+            test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
+
+            Placeholder mainPlaceholderAbout = mainAbout as Placeholder;
+            foreach (Component component in mainPlaceholderAbout)
+            {
+                var fields = component.Fields;
+                
+                Console.WriteLine(JsonConvert.SerializeObject(fields));
+    
+                if (fields.TryGetValue("HeroImage", out var fieldReader))
+                {
+                    var heroImage = fieldReader.Read<ImageField>(); 
+                }
+                
+                if (fields.TryGetValue("HeroTitle", out var fieldReaderHeroTitle))
+                {
+                    var heroTitle = fieldReaderHeroTitle.Read<TextField>();
+                }
+            }
+            
+            // Console.WriteLine(json);
+            
+            
+            return Json(test.Content);
 
 
             // var test = Sitecore.LayoutService.Client.DefaultLayoutClient

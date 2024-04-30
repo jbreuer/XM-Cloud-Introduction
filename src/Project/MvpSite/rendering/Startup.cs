@@ -19,6 +19,7 @@ using Mvp.Project.MvpSite.Extensions;
 using Sitecore.AspNet.ExperienceEditor;
 using Sitecore.AspNet.RenderingEngine.Extensions;
 using Sitecore.AspNet.RenderingEngine.Localization;
+using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Extensions;
 using Sitecore.LayoutService.Client.Newtonsoft.Extensions;
 
@@ -54,6 +55,8 @@ namespace Mvp.Project.MvpSite
             services.AddSitecoreLayoutService()
               .AddGraphQlHandler("default", Configuration.DefaultSiteName!, Configuration.ExperienceEdgeToken!, Configuration.LayoutServiceUri!)
               .AsDefaultHandler();
+            
+            services.AddSingleton<ISitecoreLayoutSerializer, CustomLayoutServiceSerializer>();
 
             // services.AddFeatureUser(DotNetConfiguration);
 
