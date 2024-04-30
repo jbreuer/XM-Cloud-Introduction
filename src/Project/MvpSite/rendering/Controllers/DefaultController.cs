@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -83,7 +84,18 @@ namespace Mvp.Project.MvpSite.Controllers
             {
                 var fields = component.Fields;
                 
-                Console.WriteLine(JsonConvert.SerializeObject(fields));
+                var jsonSettings = new JsonSerializerSettings {
+                    Formatting = Formatting.Indented,
+                    NullValueHandling = NullValueHandling.Include,
+                    Converters = new List<JsonConverter> {
+                        //new CustomFieldReaderJsonConverter(new FieldReaderJsonConverter())
+                        new NewtonsoftFieldReaderJsonConverter()
+                    }
+                };
+
+                var json2 = JsonConvert.SerializeObject(fields, jsonSettings);
+                Console.WriteLine(json2);
+
     
                 if (fields.TryGetValue("HeroImage", out var fieldReader))
                 {
