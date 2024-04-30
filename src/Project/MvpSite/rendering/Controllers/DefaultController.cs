@@ -98,7 +98,9 @@ namespace Mvp.Project.MvpSite.Controllers
             
             var jsonSettings = new JsonSerializerSettings {
                 Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Include,
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                ContractResolver = CustomDataContractResolver.Instance,
                 Converters = new List<JsonConverter> {
                     new NewtonsoftFieldReaderJsonConverter()
                 }
