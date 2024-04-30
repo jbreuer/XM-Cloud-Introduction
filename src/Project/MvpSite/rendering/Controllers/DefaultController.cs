@@ -73,10 +73,6 @@ namespace Mvp.Project.MvpSite.Controllers
             };
             var test = await _layoutClient.Request(sitecoreLayoutRequest);
             
-            var json = JsonConvert.SerializeObject(test.Content, Formatting.Indented, new JsonSerializerSettings {
-                NullValueHandling = NullValueHandling.Include
-            });
-            
             test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
 
             Placeholder mainPlaceholderAbout = mainAbout as Placeholder;
@@ -84,17 +80,7 @@ namespace Mvp.Project.MvpSite.Controllers
             {
                 var fields = component.Fields;
                 
-                var jsonSettings = new JsonSerializerSettings {
-                    Formatting = Formatting.Indented,
-                    NullValueHandling = NullValueHandling.Include,
-                    Converters = new List<JsonConverter> {
-                        //new CustomFieldReaderJsonConverter(new FieldReaderJsonConverter())
-                        new NewtonsoftFieldReaderJsonConverter()
-                    }
-                };
-
-                var json2 = JsonConvert.SerializeObject(fields, jsonSettings);
-                Console.WriteLine(json2);
+                
 
     
                 if (fields.TryGetValue("HeroImage", out var fieldReader))
@@ -110,8 +96,16 @@ namespace Mvp.Project.MvpSite.Controllers
             
             // Console.WriteLine(json);
             
+            var jsonSettings = new JsonSerializerSettings {
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Include,
+                Converters = new List<JsonConverter> {
+                    new NewtonsoftFieldReaderJsonConverter()
+                }
+            };
             
-            return Json(test.Content);
+            var json = JsonConvert.SerializeObject(test.Content, jsonSettings);
+            return Content(json);
 
 
             // var test = Sitecore.LayoutService.Client.DefaultLayoutClient
