@@ -174,6 +174,12 @@ namespace Mvp.Project.MvpSite
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
+                    "layout",
+                    "layout",
+                    new { controller = "Layout", action = "Index" }
+                );
+                
+                endpoints.MapControllerRoute(
                   "error",
                   "error",
                   new { controller = "Default", action = "Error" }
