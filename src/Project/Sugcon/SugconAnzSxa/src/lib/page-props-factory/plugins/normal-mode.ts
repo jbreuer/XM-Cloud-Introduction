@@ -28,6 +28,7 @@ class NormalModePlugin implements Plugin {
 
     // Fetch layout data, passing on req/res for SSR
     const layoutService = this.getLayoutService(props.site.name);
+    console.log('layoutService', layoutService);
     props.layoutData = await layoutService.fetchLayoutData(
       path,
       props.locale,
