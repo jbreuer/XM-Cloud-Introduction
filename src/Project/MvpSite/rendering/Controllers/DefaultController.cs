@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -76,23 +77,41 @@ namespace Mvp.Project.MvpSite.Controllers
             test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
 
             Placeholder mainPlaceholderAbout = mainAbout as Placeholder;
-            foreach (Component component in mainPlaceholderAbout)
+            if (mainPlaceholderAbout != null) 
             {
-                var fields = component.Fields;
-                
-                
+                foreach (Component component in mainPlaceholderAbout)
+                {
+                    var fields = component.Fields;
+                    
+                    if (component.Fields.TryGetValue("HeroSubtitle", out var fieldReaderHeroSubtitle))
+                    {
+                        var heroSubtitle = fieldReaderHeroSubtitle.Read<TextField>();
+                        if (heroSubtitle != null)
+                        {
+                            component.Fields["HeroSubtitle"] = new TextField { Value = "This is a test" };
+                        }
+                    }
 
-    
-                if (fields.TryGetValue("HeroImage", out var fieldReader))
-                {
-                    var heroImage = fieldReader.Read<ImageField>(); 
-                }
-                
-                if (fields.TryGetValue("HeroTitle", out var fieldReaderHeroTitle))
-                {
-                    var heroTitle = fieldReaderHeroTitle.Read<TextField>();
+                    
+                    // component.Fields = null;
+
+                    // var firstField = component.Fields.FirstOrDefault();
+                    //
+                    // var firstFieldKey = firstField.Key;
+                    // var firstFieldValue = firstField.Value;
+                    // var firstFieldReader = firstFieldValue as IFieldReader;
+                    // if (firstFieldReader != null)
+                    // {
+                    //     var firstFieldRead = firstFieldReader.Read<TextField>();
+                    //     var firstFieldReadValue = firstFieldRead.Value;
+                    // }
                 }
             }
+            else
+            {
+                Console.WriteLine("mainAbout is not a Placeholder or is null");
+            }
+
             
             // Console.WriteLine(json);
             
