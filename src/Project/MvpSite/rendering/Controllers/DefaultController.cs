@@ -47,24 +47,24 @@ namespace Mvp.Project.MvpSite.Controllers
             
             // request.Response.Content.Sitecore.Route.Placeholders
 
-            var req = request.Response.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var main);
-
-            Placeholder mainPlaceholder = main as Placeholder;
-            foreach (Component component in mainPlaceholder)
-            {
-                var fields = component.Fields;
-    
-                if (fields.TryGetValue("HeroImage", out var fieldReader))
-                {
-                    var heroImage = fieldReader.Read<ImageField>(); 
-                }
-                
-                if (fields.TryGetValue("HeroTitle", out var fieldReaderHeroTitle))
-                {
-                    var heroTitle = fieldReaderHeroTitle.Read<TextField>();
-                }
-            }
-
+            // var req = request.Response.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var main);
+            //
+            // Placeholder mainPlaceholder = main as Placeholder;
+            // foreach (Component component in mainPlaceholder)
+            // {
+            //     var fields = component.Fields;
+            //
+            //     if (fields.TryGetValue("HeroImage", out var fieldReader))
+            //     {
+            //         var heroImage = fieldReader.Read<ImageField>(); 
+            //     }
+            //     
+            //     if (fields.TryGetValue("HeroTitle", out var fieldReaderHeroTitle))
+            //     {
+            //         var heroTitle = fieldReaderHeroTitle.Read<TextField>();
+            //     }
+            // }
+            //
             var sitecoreLayoutRequest = new SitecoreLayoutRequest
             {
                 { "sc_site", "mvp-site" },
@@ -73,60 +73,60 @@ namespace Mvp.Project.MvpSite.Controllers
                 { "sc_lang", "en" }
             };
             var test = await _layoutClient.Request(sitecoreLayoutRequest);
-            
-            test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
-
-            Placeholder mainPlaceholderAbout = mainAbout as Placeholder;
-            if (mainPlaceholderAbout != null) 
-            {
-                foreach (Component component in mainPlaceholderAbout)
-                {
-                    var fields = component.Fields;
-                    
-                    // Ensure the component has a HeroSubtitle field
-                    if (component.Fields.ContainsKey("HeroSubtitle"))
-                    {   
-                        if (component.Fields.TryGetValue("HeroSubtitle", out var fieldReaderHeroSubtitle))
-                        {
-                            var heroSubtitle = fieldReaderHeroSubtitle.Read<TextField>();
-                            if (heroSubtitle != null)
-                            {
-                                // Create a new JToken with the updated subtitle
-                                JToken subtitleToken = JToken.FromObject(new { value = heroSubtitle.Value + " updated text" });
-
-                                // Use the existing serializer or create a new one if necessary
-                                JsonSerializer serializer = new JsonSerializer();
-
-                                // Create a new NewtonsoftFieldReader with the new JToken
-                                NewtonsoftFieldReader newFieldReader = new NewtonsoftFieldReader(serializer, subtitleToken);
-
-                                // Update the component's Fields dictionary
-                                component.Fields["HeroSubtitle"] = newFieldReader;
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("mainAbout is not a Placeholder or is null");
-            }
-
-            
-            // Console.WriteLine(json);
-            
-            var jsonSettings = new JsonSerializerSettings {
-                Formatting = Formatting.Indented,
-                DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-                ContractResolver = CustomDataContractResolver.Instance,
-                Converters = new List<JsonConverter> {
-                    new NewtonsoftFieldReaderJsonConverter()
-                }
-            };
-            
-            var json = JsonConvert.SerializeObject(test.Content, jsonSettings);
-            return Content(json, "application/json");
+            //
+            // test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
+            //
+            // Placeholder mainPlaceholderAbout = mainAbout as Placeholder;
+            // if (mainPlaceholderAbout != null) 
+            // {
+            //     foreach (Component component in mainPlaceholderAbout)
+            //     {
+            //         var fields = component.Fields;
+            //         
+            //         // Ensure the component has a HeroSubtitle field
+            //         if (component.Fields.ContainsKey("HeroSubtitle"))
+            //         {   
+            //             if (component.Fields.TryGetValue("HeroSubtitle", out var fieldReaderHeroSubtitle))
+            //             {
+            //                 var heroSubtitle = fieldReaderHeroSubtitle.Read<TextField>();
+            //                 if (heroSubtitle != null)
+            //                 {
+            //                     // Create a new JToken with the updated subtitle
+            //                     JToken subtitleToken = JToken.FromObject(new { value = heroSubtitle.Value + " updated text" });
+            //
+            //                     // Use the existing serializer or create a new one if necessary
+            //                     JsonSerializer serializer = new JsonSerializer();
+            //
+            //                     // Create a new NewtonsoftFieldReader with the new JToken
+            //                     NewtonsoftFieldReader newFieldReader = new NewtonsoftFieldReader(serializer, subtitleToken);
+            //
+            //                     // Update the component's Fields dictionary
+            //                     component.Fields["HeroSubtitle"] = newFieldReader;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            // else
+            // {
+            //     Console.WriteLine("mainAbout is not a Placeholder or is null");
+            // }
+            //
+            //
+            // // Console.WriteLine(json);
+            //
+            // var jsonSettings = new JsonSerializerSettings {
+            //     Formatting = Formatting.Indented,
+            //     DateFormatHandling = DateFormatHandling.IsoDateFormat,
+            //     DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+            //     ContractResolver = CustomDataContractResolver.Instance,
+            //     Converters = new List<JsonConverter> {
+            //         new NewtonsoftFieldReaderJsonConverter()
+            //     }
+            // };
+            //
+            // var json = JsonConvert.SerializeObject(test.Content, jsonSettings);
+            // return Content(json, "application/json");
 
             // var test = Sitecore.LayoutService.Client.DefaultLayoutClient
             
