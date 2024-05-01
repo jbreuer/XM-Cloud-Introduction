@@ -83,28 +83,28 @@ namespace Mvp.Project.MvpSite.Controllers
                 {
                     var fields = component.Fields;
                     
-                    if (component.Fields.TryGetValue("HeroSubtitle", out var fieldReaderHeroSubtitle))
-                    {
-                        var heroSubtitle = fieldReaderHeroSubtitle.Read<TextField>();
-                        if (heroSubtitle != null)
+                    // Ensure the component has a HeroSubtitle field
+                    if (component.Fields.ContainsKey("HeroSubtitle"))
+                    {   
+                        if (component.Fields.TryGetValue("HeroSubtitle", out var fieldReaderHeroSubtitle))
                         {
-                            component.Fields["HeroSubtitle"] = new TextField { Value = "This is a test" };
+                            var heroSubtitle = fieldReaderHeroSubtitle.Read<TextField>();
+                            if (heroSubtitle != null)
+                            {
+                                // Create a new JToken with the updated subtitle
+                                JToken subtitleToken = JToken.FromObject(new { value = heroSubtitle.Value + " updated text" });
+
+                                // Use the existing serializer or create a new one if necessary
+                                JsonSerializer serializer = new JsonSerializer();
+
+                                // Create a new NewtonsoftFieldReader with the new JToken
+                                NewtonsoftFieldReader newFieldReader = new NewtonsoftFieldReader(serializer, subtitleToken);
+
+                                // Update the component's Fields dictionary
+                                component.Fields["HeroSubtitle"] = newFieldReader;
+                            }
                         }
                     }
-
-                    
-                    // component.Fields = null;
-
-                    // var firstField = component.Fields.FirstOrDefault();
-                    //
-                    // var firstFieldKey = firstField.Key;
-                    // var firstFieldValue = firstField.Value;
-                    // var firstFieldReader = firstFieldValue as IFieldReader;
-                    // if (firstFieldReader != null)
-                    // {
-                    //     var firstFieldRead = firstFieldReader.Read<TextField>();
-                    //     var firstFieldReadValue = firstFieldRead.Value;
-                    // }
                 }
             }
             else
