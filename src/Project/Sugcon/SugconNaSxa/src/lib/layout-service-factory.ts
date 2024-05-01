@@ -15,13 +15,7 @@ export class LayoutServiceFactory {
    * @returns {LayoutService} service instance
    */
   create(siteName: string): LayoutService {
-    return process.env.FETCH_WITH === constants.FETCH_WITH.GRAPHQL
-      ? new GraphQLLayoutService({
-          endpoint: config.graphQLEndpoint,
-          apiKey: config.sitecoreApiKey,
-          siteName,
-        })
-      : new RestLayoutService({
+    return new RestLayoutService({
           apiHost: config.sitecoreApiHost,
           apiKey: config.sitecoreApiKey,
           siteName,
