@@ -37,6 +37,8 @@ class NormalModePlugin implements Plugin {
       isServerSidePropsContext(context) ? (context as GetServerSidePropsContext).res : undefined
     );
 
+    console.dir(props.layoutData, { depth: null });
+
     if (!props.layoutData.sitecore.route) {
       // A missing route value signifies an invalid path, so set notFound.
       // Our page routes will return this in getStatic/ServerSideProps,
