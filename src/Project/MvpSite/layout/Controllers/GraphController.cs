@@ -41,16 +41,18 @@ public class GraphController : Controller
         // client.HttpClient.DefaultRequestHeaders.Add("sc_site", "mvp-site");
         var json2 = System.Text.Json.JsonSerializer.Serialize(request);
         
+        var keyValuePairs = new List<KeyValuePair<string, string>>()
+        {
+            new KeyValuePair<string, string>("path", "/"),
+            new KeyValuePair<string, string>("language", "en"),
+            new KeyValuePair<string, string>("site", "mvp-site")
+        };
+        
         var graphqlRequest = new GraphQLRequest()
         {
             Query = request.Query,
-            OperationName = "LayoutQuery",
-            Variables = (object)new
-            {
-                path = "/",
-                language = "en",
-                site = "mvp-site"
-            }
+            OperationName = request.OperationName,
+            Variables = request.Variables?.ToString()
         };
         
         GraphQLResponse<LayoutQueryResponse> graphQlResponse = await client.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
