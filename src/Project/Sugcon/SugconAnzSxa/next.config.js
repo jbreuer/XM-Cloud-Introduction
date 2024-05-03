@@ -4,6 +4,8 @@ const plugins = require('./src/temp/next-config-plugins') || {};
 
 const publicUrl = getPublicUrl();
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 /**
  * @type {import('next').NextConfig}
  */

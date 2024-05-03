@@ -12,11 +12,11 @@ import { JssConfig, jssConfigFactory } from './config';
 
 const defaultConfig: JssConfig = {
   sitecoreApiKey: 'B2F8A9B9-7203-4DCF-9314-8B28B043347E',
-  sitecoreApiHost: 'https://xmcloudcm.localhost',
+  sitecoreApiHost: 'https://localhost:44367',
   jssAppName: 'sugconanz',
-  graphQLEndpointPath: '/sitecore/api/graph/edge',
+  graphQLEndpointPath: '/graph',
   defaultLanguage: 'en',
-  graphQLEndpoint: 'https://xmcloudcm.localhost/sitecore/api/graph/edge',
+  graphQLEndpoint: 'https://localhost:44367/graph',
 };
 
 generateConfig(defaultConfig);
