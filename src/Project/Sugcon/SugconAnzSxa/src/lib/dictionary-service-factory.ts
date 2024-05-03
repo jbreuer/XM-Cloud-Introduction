@@ -15,8 +15,7 @@ export class DictionaryServiceFactory {
    * @returns {DictionaryService} service instance
    */
   create(siteName: string): DictionaryService {
-    return process.env.FETCH_WITH === constants.FETCH_WITH.GRAPHQL
-      ? new GraphQLDictionaryService({
+    return new GraphQLDictionaryService({
           endpoint: config.graphQLEndpoint,
           apiKey: config.sitecoreApiKey,
           siteName,
@@ -27,11 +26,6 @@ export class DictionaryServiceFactory {
             otherwise, the service will attempt to figure out the root item for the current JSS App using GraphQL and app name.
             rootItemId: '{GUID}'
           */
-        })
-      : new RestDictionaryService({
-          apiHost: config.sitecoreApiHost,
-          apiKey: config.sitecoreApiKey,
-          siteName,
         });
   }
 }
