@@ -186,6 +186,12 @@ namespace Mvp.Project.MvpSite
                 );
                 
                 endpoints.MapControllerRoute(
+                    "graph",
+                    "graph",
+                    new { controller = "Graph", action = "Index" }
+                );
+                
+                endpoints.MapControllerRoute(
                   "error",
                   "error",
                   new { controller = "Default", action = "Error" }
