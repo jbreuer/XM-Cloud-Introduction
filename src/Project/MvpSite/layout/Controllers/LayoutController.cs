@@ -16,12 +16,10 @@ namespace Mvp.Project.MvpSite.Controllers;
 public class LayoutController : Controller
 {
     private readonly ISitecoreLayoutClient _layoutClient;
-    private readonly Func<string, ILayoutRequestHandler> _handlerFactory;
 
-    public LayoutController(ISitecoreLayoutClient layoutClient, Func<string, ILayoutRequestHandler> handlerFactory)
+    public LayoutController(ISitecoreLayoutClient layoutClient)
     {
         _layoutClient = layoutClient;
-        _handlerFactory = handlerFactory;
     }
     
     public async Task<IActionResult> Index(string item, string sc_apikey, string sc_site, string sc_lang)
@@ -34,12 +32,6 @@ public class LayoutController : Controller
             { "sc_lang", sc_lang }
         };
         var test = await _layoutClient.Request(sitecoreLayoutRequest);
-        
-        ILayoutRequestHandler graphQlHandler = _handlerFactory("GraphQlHandler");
-        ILayoutRequestHandler httpHandler = _handlerFactory("HttpHandler");
-        
-        var graphQlHandlerResult = graphQlHandler.Request(sitecoreLayoutRequest, String.Empty);
-        var httpHandlerResult = httpHandler.Request(sitecoreLayoutRequest, String.Empty);
         
         test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
         
