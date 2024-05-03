@@ -5,6 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Abstractions;
+using GraphQL.Client.Abstractions.Websocket;
+using GraphQL.Client.Http;
+using GraphQL.Client.Serializer.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -22,18 +25,20 @@ namespace Mvp.Project.MvpSite.Controllers;
 
 public class GraphController : Controller
 {
-    private readonly IGraphQLClient _client;
     private readonly ISitecoreLayoutSerializer _serializer;
 
-    public GraphController(IGraphQLClient client, ISitecoreLayoutSerializer serializer)
+    public GraphController(ISitecoreLayoutSerializer serializer)
     {
-        this._client = Assert.ArgumentNotNull<IGraphQLClient>(client, nameof (client));
         this._serializer = Assert.ArgumentNotNull<ISitecoreLayoutSerializer>(serializer, nameof (serializer));
     }
     
     public async Task<IActionResult> Index([FromBody] GraphQLRequest request)
     {
-        GraphQLResponse<LayoutQueryResponse> graphQlResponse = await this._client.SendQueryAsync<LayoutQueryResponse>(request, new CancellationToken()).ConfigureAwait(false);
+        GraphQLHttpClient client = new GraphQLHttpClient("https://xmcloudcm.localhost/sitecore/api/graph/edge", (IGraphQLWebsocketJsonSerializer) new SystemTextJsonSerializer());
+        client.HttpClient.DefaultRequestHeaders.Add("sc_apikey", "{E2F3D43E-B1FD-495E-B4B1-84579892422A}");
+        // client.HttpClient.DefaultRequestHeaders.Add("sc_site", "mvp-site");
+        
+        GraphQLResponse<LayoutQueryResponse> graphQlResponse = await client.SendQueryAsync<LayoutQueryResponse>(request, new CancellationToken()).ConfigureAwait(false);
         string str = graphQlResponse?.Data?.Layout?.Item?.Rendered.ToString();
         var content = this._serializer.Deserialize(str);
 
