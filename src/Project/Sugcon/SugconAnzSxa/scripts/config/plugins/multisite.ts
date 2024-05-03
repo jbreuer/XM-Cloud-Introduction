@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import { ConfigPlugin, JssConfig } from '..';
-import { GraphQLSiteInfoService, SiteInfo } from '@sitecore-jss/sitecore-jss-nextjs';
+// import { GraphQLSiteInfoService, SiteInfo } from '@sitecore-jss/sitecore-jss-nextjs';
+import { SiteInfo } from '@sitecore-jss/sitecore-jss-nextjs';
 
 /**
  * This plugin will set the "sites" config prop.
@@ -22,16 +23,18 @@ class MultisitePlugin implements ConfigPlugin {
       );
     } else {
       console.log(`Fetching site information from ${endpoint}`);
-      try {
-        const siteInfoService = new GraphQLSiteInfoService({
-          endpoint,
-          apiKey,
-        });
-        sites = await siteInfoService.fetchSiteInfo();
-      } catch (error) {
-        console.error(chalk.red('Error fetching site information'));
-        console.error(error);
-      }
+      sites = [{"name":"Shared","hostName":"*","language":"en"},{"pointOfSale":{"en":"Sugcon2024EU"},"name":"EU","hostName":"sugconeu2024.xmcloudcm.localhost","language":"en"},{"name":"sugconna","hostName":"*","language":"en"},{"name":"sugconindia","hostName":"xmcloudcm.localhost","language":"en"},{"name":"SugconShared","hostName":"","language":"en"},{"name":"sugconanz","hostName":"xmcloudcm.localhost","language":"en"},{"pointOfSale":{"*":"SugconEuSxa"},"name":"sugconeu","hostName":"xmcloudcm.localhost","language":"en"}];
+      
+      // try {
+      //   const siteInfoService = new GraphQLSiteInfoService({
+      //     endpoint,
+      //     apiKey,
+      //   });
+      //   sites = await siteInfoService.fetchSiteInfo();
+      // } catch (error) {
+      //   console.error(chalk.red('Error fetching site information'));
+      //   console.error(error);
+      // }
     }
 
     return Object.assign({}, config, {
