@@ -79,6 +79,12 @@ namespace Mvp.Project.MvpSite
               // .AddHttpHandler("default", Configuration.LayoutServiceUri!)
               // .AsDefaultHandler();
             // services.AddFeatureUser(DotNetConfiguration);
+            
+            services.AddTransient<ISitecoreLayoutClient>((Func<IServiceProvider, ISitecoreLayoutClient>) (sp =>
+            {
+                using (IServiceScope scope = sp.CreateScope())
+                    return (ISitecoreLayoutClient) ActivatorUtilities.CreateInstance<DefaultLayoutClient>(scope.ServiceProvider, (object) sp);
+            }));
 
             // Register the Sitecore Rendering Engine services.
             services.AddSitecoreRenderingEngine(options =>
