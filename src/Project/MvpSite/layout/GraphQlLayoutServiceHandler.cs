@@ -38,17 +38,20 @@ public class GraphQlLayoutServiceHandler : ILayoutRequestHandler, IDisposable
     {
       List<SitecoreLayoutServiceClientException> errors = new List<SitecoreLayoutServiceClientException>();
       SitecoreLayoutResponseContent content = (SitecoreLayoutResponseContent) null;
-      GraphQLResponse<LayoutQueryResponse> graphQlResponse = await this._client.SendQueryAsync<LayoutQueryResponse>(new GraphQLRequest()
+      var graphqlRequest = new GraphQLRequest()
       {
-        Query = "\r\n                query LayoutQuery($path: String!, $language: String!, $site: String!) {\r\n                    layout(routePath: $path, language: $language, site: $site) {\r\n                        item {\r\n                            rendered\r\n                        }\r\n                    }\r\n                }",
+        Query =
+          "\r\n                query LayoutQuery($path: String!, $language: String!, $site: String!) {\r\n                    layout(routePath: $path, language: $language, site: $site) {\r\n                        item {\r\n                            rendered\r\n                        }\r\n                    }\r\n                }",
         OperationName = "LayoutQuery",
-        Variables = (object) new
+        Variables = (object)new
         {
           path = request.Path(),
           language = request.Language(),
           site = request.SiteName()
         }
-      }, new CancellationToken()).ConfigureAwait(false);
+      };
+      var json = JsonSerializer.Serialize(graphqlRequest);
+      GraphQLResponse<LayoutQueryResponse> graphQlResponse = await this._client.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
       
       // DefaultInterpolatedStringHandler interpolatedStringHandler;
       

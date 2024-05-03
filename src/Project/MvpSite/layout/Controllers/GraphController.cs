@@ -37,8 +37,21 @@ public class GraphController : Controller
         GraphQLHttpClient client = new GraphQLHttpClient("https://xmcloudcm.localhost/sitecore/api/graph/edge", (IGraphQLWebsocketJsonSerializer) new SystemTextJsonSerializer());
         client.HttpClient.DefaultRequestHeaders.Add("sc_apikey", "{E2F3D43E-B1FD-495E-B4B1-84579892422A}");
         // client.HttpClient.DefaultRequestHeaders.Add("sc_site", "mvp-site");
+        var json2 = System.Text.Json.JsonSerializer.Serialize(request);
         
-        GraphQLResponse<LayoutQueryResponse> graphQlResponse = await client.SendQueryAsync<LayoutQueryResponse>(request, new CancellationToken()).ConfigureAwait(false);
+        var graphqlRequest = new GraphQLRequest()
+        {
+            Query = request.Query,
+            OperationName = "LayoutQuery",
+            Variables = (object)new
+            {
+                path = "/",
+                language = "en",
+                site = "mvp-site"
+            }
+        };
+        
+        GraphQLResponse<LayoutQueryResponse> graphQlResponse = await client.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
         string str = graphQlResponse?.Data?.Layout?.Item?.Rendered.ToString();
         var content = this._serializer.Deserialize(str);
 
