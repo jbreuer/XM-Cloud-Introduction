@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
@@ -9,7 +11,7 @@ using GraphQL.Client.Abstractions.Websocket;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+// using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Exceptions;
@@ -53,17 +55,16 @@ public class GraphController : Controller
         
         GraphQLResponse<LayoutQueryResponse> graphQlResponse = await client.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
         
-        var jsonSettings = new JsonSerializerSettings {
-            Formatting = Formatting.Indented,
-            DateFormatHandling = DateFormatHandling.IsoDateFormat,
-            DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-            ContractResolver = CustomDataContractResolver.Instance,
-            Converters = new List<JsonConverter> {
-                new NewtonsoftFieldReaderJsonConverter()
-            }
+        var jsonSettings = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
-        
-        var json = JsonConvert.SerializeObject(graphQlResponse, jsonSettings);
+
+        var json = JsonSerializer.Serialize(graphQlResponse, jsonSettings);
+
         return Content(json, "application/json");
         
         // string str = graphQlResponse?.Data?.Layout?.Item?.Rendered.ToString();
