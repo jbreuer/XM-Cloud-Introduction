@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Web;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Mvp.Feature.BasicContent.Extensions;
 using Mvp.Feature.Navigation.Extensions;
 using Mvp.Feature.People.Extensions;
@@ -25,6 +27,8 @@ using Sitecore.AspNet.RenderingEngine.Localization;
 using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Extensions;
 using Sitecore.LayoutService.Client.Newtonsoft.Extensions;
+using Sitecore.LayoutService.Client.RequestHandlers;
+using Sitecore.LayoutService.Client.RequestHandlers.GraphQL;
 
 namespace Mvp.Project.MvpSite
 {
@@ -56,29 +60,44 @@ namespace Mvp.Project.MvpSite
 
             // Register the GraphQL version of the Sitecore Layout Service Client for use against experience edge & local edge endpoint
             services.AddSitecoreLayoutService()
-              .AddGraphQlHandler("default", Configuration.DefaultSiteName!, Configuration.ExperienceEdgeToken!, Configuration.LayoutServiceUri!)
-              // .AddHttpHandler("default", sp => new HttpClient
-              // {
-              //     BaseAddress = Configuration.LayoutServiceUri
-              // })
-              // .MapFromRequest((sitecoreRequest, httpRequestMessage) =>
-              // {
-              //     // Append the necessary query parameters
-              //     var uriBuilder = new UriBuilder(httpRequestMessage.RequestUri);
-              //     var query = HttpUtility.ParseQueryString(uriBuilder.Query);
-              //
-              //     // Add or update specific query parameters
-              //     query["sc_apikey"] = Configuration.ExperienceEdgeToken;  // Your Sitecore API key
-              //     query["sc_site"] = Configuration.DefaultSiteName;  // The Sitecore site name
-              //     query["sc_lang"] = "en";  // The language parameter
-              //
-              //     uriBuilder.Query = query.ToString();
-              //     httpRequestMessage.RequestUri = uriBuilder.Uri;
-              // })
+              .AddGraphQlHandler("GraphQlHandler", Configuration.DefaultSiteName!, Configuration.ExperienceEdgeToken!, Configuration.LayoutServiceUri!)
               .AsDefaultHandler();
-              // .AddHttpHandler("default", Configuration.LayoutServiceUri!)
-              // .AsDefaultHandler();
-            // services.AddFeatureUser(DotNetConfiguration);
+            
+            services.AddSitecoreLayoutService()
+                .AddHttpHandler("HttpHandler", sp => new HttpClient
+                {
+                    BaseAddress = Configuration.LayoutServiceUri
+                })
+                .MapFromRequest((sitecoreRequest, httpRequestMessage) =>
+                {
+                    // Append the necessary query parameters
+                    var uriBuilder = new UriBuilder(httpRequestMessage.RequestUri);
+                    var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+                
+                    // Add or update specific query parameters
+                    query["sc_apikey"] = Configuration.ExperienceEdgeToken;  // Your Sitecore API key
+                    query["sc_site"] = Configuration.DefaultSiteName;  // The Sitecore site name
+                    query["sc_lang"] = "en";  // The language parameter
+                
+                    uriBuilder.Query = query.ToString();
+                    httpRequestMessage.RequestUri = uriBuilder.Uri;
+                });
+            
+            services.AddTransient<HttpLayoutRequestHandler>();
+            services.AddTransient<GraphQlLayoutServiceHandler>();
+            
+            services.AddTransient<Func<string, ILayoutRequestHandler>>(serviceProvider => key =>
+            {
+                var handlers = serviceProvider.GetServices<ILayoutRequestHandler>().ToList();
+                serviceProvider.GetService<ILogger<Startup>>()?.LogDebug("Available handlers: {HandlerTypes}", handlers.Select(h => h.GetType().Name).ToList());
+
+                return key switch
+                {
+                    "HttpHandler" => handlers.FirstOrDefault(h => h is HttpLayoutRequestHandler),
+                    "GraphQlHandler" => handlers.FirstOrDefault(h => h is GraphQlLayoutServiceHandler),
+                    _ => throw new KeyNotFoundException($"Handler not found for key: {key}")
+                };
+            });
             
             services.AddTransient<ISitecoreLayoutClient>((Func<IServiceProvider, ISitecoreLayoutClient>) (sp =>
             {
