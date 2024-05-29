@@ -43,6 +43,14 @@ public class GraphController : Controller
         if (request.Query.Contains("rendered"))
         {
             result = await client.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
+            string str = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
+            
+            var j = JObject.Parse(str);
+
+            // Preprocess JSON to handle empty objects/arrays and ensure consistency
+            NormalizeFields(j);
+            
+            var content = this._serializer.Deserialize(j.ToString());
         }
         else
         {
@@ -59,6 +67,8 @@ public class GraphController : Controller
         };
         
         var json = JsonSerializer.Serialize(result, jsonSettings);
+        
+        
         // var content = result.Data.ToString();
         // if (!string.IsNullOrEmpty(content))
         // {
@@ -67,5 +77,44 @@ public class GraphController : Controller
         
         
         return Content(json, "application/json");
+    }
+    
+    void NormalizeFields(JToken token)
+    {
+        if (token.Type == JTokenType.Object)
+        {
+            var obj = (JObject)token;
+            foreach (var property in obj.Properties())
+            {
+                if (property.Name == "fields" && property.Value.Type == JTokenType.Array)
+                {
+                    // Example logic to convert array to object if necessary
+                    var fieldsArray = (JArray)property.Value;
+                    var fieldsObject = new JObject();
+                    int index = 0;
+                    foreach (var item in fieldsArray)
+                    {
+                        fieldsObject[$"item{index++}"] = item;
+                    }
+                    obj[property.Name] = fieldsObject;
+                }
+                else if (property.Name == "fields" && property.Value.Type == JTokenType.Object)
+                {
+                    // Ensure nested fields are normalized
+                    NormalizeFields(property.Value);
+                }
+                else
+                {
+                    NormalizeFields(property.Value);
+                }
+            }
+        }
+        else if (token.Type == JTokenType.Array)
+        {
+            foreach (var item in (JArray)token)
+            {
+                NormalizeFields(item);
+            }
+        }
     }
 }
