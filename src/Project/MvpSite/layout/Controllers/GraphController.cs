@@ -44,13 +44,76 @@ public class GraphController : Controller
         {
             result = await client.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
             string str = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
-            
-            var j = JObject.Parse(str);
 
-            // Preprocess JSON to handle empty objects/arrays and ensure consistency
-            NormalizeFields(j);
-            
-            var content = this._serializer.Deserialize(j.ToString());
+            if (!string.IsNullOrWhiteSpace(str))
+            {
+
+
+                var j = JObject.Parse(str);
+
+                // Preprocess JSON to handle empty objects/arrays and ensure consistency
+                NormalizeFields(j);
+
+                var content = this._serializer.Deserialize(j.ToString());
+
+                content.Sitecore.Route.Placeholders.TryGetValue("headless-main", out var headlessMain);
+
+                Placeholder main = headlessMain as Placeholder;
+                if (main != null)
+                {
+                    foreach (Component component in main)
+                    {
+                        component.Placeholders.TryGetValue("container-{*}", out var container);
+                        Placeholder containerPlaceholder = container as Placeholder;
+                        if (containerPlaceholder != null)
+                        {
+                            foreach (Component containerComponent in containerPlaceholder)
+                            {
+                                // Ensure the component has a HeroSubtitle field
+                                if (containerComponent.Fields.ContainsKey("Text"))
+                                {
+                                    if (containerComponent.Fields.TryGetValue("Text", out var fieldReaderHeroSubtitle))
+                                    {
+                                        var heroSubtitle = fieldReaderHeroSubtitle.Read<TextField>();
+                                        if (heroSubtitle != null)
+                                        {
+                                            // Create a new JToken with the updated subtitle
+                                            JToken subtitleToken = JToken.FromObject(new
+                                                { value = heroSubtitle.Value + " updated text" });
+
+                                            // Use the existing serializer or create a new one if necessary
+                                            Newtonsoft.Json.JsonSerializer serializer =
+                                                new Newtonsoft.Json.JsonSerializer();
+
+                                            // Create a new NewtonsoftFieldReader with the new JToken
+                                            NewtonsoftFieldReader newFieldReader =
+                                                new NewtonsoftFieldReader(serializer, subtitleToken);
+
+                                            // Update the component's Fields dictionary
+                                            containerComponent.Fields["Text"] = newFieldReader;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var settings = new Newtonsoft.Json.JsonSerializerSettings
+                {
+                    Formatting = Newtonsoft.Json.Formatting.Indented,
+                    DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat,
+                    DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc,
+                    ContractResolver = CustomDataContractResolver.Instance,
+                    Converters = new List<Newtonsoft.Json.JsonConverter>
+                    {
+                        new NewtonsoftFieldReaderJsonConverter()
+                    }
+                };
+
+                var ok = Newtonsoft.Json.JsonConvert.SerializeObject(content, settings);
+                ((GraphQLResponse<LayoutQueryResponse>)result).Data.Layout.Item.Rendered = JsonDocument.Parse(ok).RootElement;
+            }
         }
         else
         {
