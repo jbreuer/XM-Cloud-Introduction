@@ -37,8 +37,18 @@ public class GraphController : Controller
             OperationName = request.OperationName,
             Variables = request.Variables?.ToString()
         };
+
+        object result = null;
+
+        if (request.Query.Contains("rendered"))
+        {
+            result = await client.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
+        }
+        else
+        {
+            result = await client.SendQueryAsync<object>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);    
+        }
         
-        var result = await client.SendQueryAsync<object>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
         
         var jsonSettings = new JsonSerializerOptions
         {
@@ -49,6 +59,12 @@ public class GraphController : Controller
         };
         
         var json = JsonSerializer.Serialize(result, jsonSettings);
+        // var content = result.Data.ToString();
+        // if (!string.IsNullOrEmpty(content))
+        // {
+        //     var response = JsonSerializer.Deserialize<LayoutQueryResponse>(content);    
+        // }
+        
         
         return Content(json, "application/json");
     }

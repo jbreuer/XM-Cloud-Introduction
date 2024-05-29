@@ -5,6 +5,7 @@ import { SiteResolverPlugin } from '..';
 class MultisitePlugin implements SiteResolverPlugin {
   exec(sites: SiteInfo[]): SiteInfo[] {
     // Add preloaded sites
+    console.log('config.sites', config.sites);
     sites.push(...(JSON.parse(config.sites) as SiteInfo[]));
 
     return sites;
