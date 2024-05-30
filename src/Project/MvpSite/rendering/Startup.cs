@@ -56,25 +56,25 @@ namespace Mvp.Project.MvpSite
 
             // Register the GraphQL version of the Sitecore Layout Service Client for use against experience edge & local edge endpoint
             services.AddSitecoreLayoutService()
-              .AddGraphQlHandler("default", Configuration.DefaultSiteName!, Configuration.ExperienceEdgeToken!, Configuration.LayoutServiceUri!)
-              // .AddHttpHandler("default", sp => new HttpClient
-              // {
-              //     BaseAddress = Configuration.LayoutServiceUri
-              // })
-              // .MapFromRequest((sitecoreRequest, httpRequestMessage) =>
-              // {
-              //     // Append the necessary query parameters
-              //     var uriBuilder = new UriBuilder(httpRequestMessage.RequestUri);
-              //     var query = HttpUtility.ParseQueryString(uriBuilder.Query);
-              //
-              //     // Add or update specific query parameters
-              //     query["sc_apikey"] = Configuration.ExperienceEdgeToken;  // Your Sitecore API key
-              //     query["sc_site"] = Configuration.DefaultSiteName;  // The Sitecore site name
-              //     query["sc_lang"] = "en";  // The language parameter
-              //
-              //     uriBuilder.Query = query.ToString();
-              //     httpRequestMessage.RequestUri = uriBuilder.Uri;
-              // })
+              // .AddGraphQlHandler("default", Configuration.DefaultSiteName!, Configuration.ExperienceEdgeToken!, Configuration.LayoutServiceUri!)
+              .AddHttpHandler("default", sp => new HttpClient
+              {
+                  BaseAddress = Configuration.LayoutServiceUri
+              })
+              .MapFromRequest((sitecoreRequest, httpRequestMessage) =>
+              {
+                  // Append the necessary query parameters
+                  var uriBuilder = new UriBuilder(httpRequestMessage.RequestUri);
+                  var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+              
+                  // Add or update specific query parameters
+                  query["sc_apikey"] = Configuration.ExperienceEdgeToken;  // Your Sitecore API key
+                  query["sc_site"] = Configuration.DefaultSiteName;  // The Sitecore site name
+                  query["sc_lang"] = "en";  // The language parameter
+              
+                  uriBuilder.Query = query.ToString();
+                  httpRequestMessage.RequestUri = uriBuilder.Uri;
+              })
               .AsDefaultHandler();
               // .AddHttpHandler("default", Configuration.LayoutServiceUri!)
               // .AsDefaultHandler();
