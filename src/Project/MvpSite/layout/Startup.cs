@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,6 +26,7 @@ using Sitecore.AspNet.RenderingEngine.Localization;
 using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Extensions;
 using Sitecore.LayoutService.Client.Newtonsoft.Extensions;
+using Sitecore.LayoutService.Client.Request;
 
 namespace Mvp.Project.MvpSite
 {
@@ -79,6 +81,47 @@ namespace Mvp.Project.MvpSite
               // .AddHttpHandler("default", Configuration.LayoutServiceUri!)
               // .AsDefaultHandler();
             // services.AddFeatureUser(DotNetConfiguration);
+            
+            services.Configure<HttpLayoutRequestHandlerOptions>("default", options =>
+            {
+                options.RequestMap.Add((request, message) =>
+                {
+                    var uriBuilder = new UriBuilder(message.RequestUri);
+                    var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+
+                    query["sc_apikey"] = Configuration.ExperienceEdgeToken;
+                    query["sc_site"] = Configuration.DefaultSiteName;
+                    query["sc_lang"] = DefaultLanguage;
+
+                    uriBuilder.Query = query.ToString();
+                    message.RequestUri = uriBuilder.Uri;
+                });
+
+                options.RequestMap.Add((request, message) =>
+                {
+                    message.RequestUri = request.BuildDefaultSitecoreLayoutRequestUri(message.RequestUri);
+
+                    if (request.TryReadValue<string>("sc_auth_header_key", out var parameter))
+                    {
+                        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", parameter);
+                    }
+
+                    if (request.TryGetHeadersCollection(out var headers))
+                    {
+                        foreach (var header in headers)
+                        {
+                            if (new List<string>().Contains(header.Key)) // Add your non-validated headers here
+                            {
+                                message.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                            }
+                            else
+                            {
+                                message.Headers.Add(header.Key, header.Value);
+                            }
+                        }
+                    }
+                });
+            });
             
             services.AddTransient<ISitecoreLayoutClient>((Func<IServiceProvider, ISitecoreLayoutClient>) (sp =>
             {

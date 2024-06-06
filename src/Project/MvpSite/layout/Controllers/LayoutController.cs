@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sitecore.LayoutService.Client;
@@ -16,10 +18,12 @@ namespace Mvp.Project.MvpSite.Controllers;
 public class LayoutController : Controller
 {
     private readonly ISitecoreLayoutClient _layoutClient;
+    private readonly IOptionsSnapshot<HttpLayoutRequestHandlerOptions> _options;
 
-    public LayoutController(ISitecoreLayoutClient layoutClient)
+    public LayoutController(ISitecoreLayoutClient layoutClient, IOptionsSnapshot<HttpLayoutRequestHandlerOptions> options)
     {
         _layoutClient = layoutClient;
+        _options = options;
     }
     
     public async Task<IActionResult> Index(string item, string sc_apikey, string sc_site, string sc_lang)
@@ -32,6 +36,16 @@ public class LayoutController : Controller
             { "sc_lang", sc_lang }
         };
         var test = await _layoutClient.Request(sitecoreLayoutRequest);
+        
+        HttpClient client = new HttpClient
+        {
+            //BaseAddress = new Uri("https://xmcloudcm.localhost/sitecore/api/layout/render/jss")
+            BaseAddress = new Uri("https://xmcloudcm.localhost")
+        };
+        
+        HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, client.BaseAddress);
+
+        HttpLayoutRequestHandlerOptions options = this._options.Get("default");
         
         test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
         
