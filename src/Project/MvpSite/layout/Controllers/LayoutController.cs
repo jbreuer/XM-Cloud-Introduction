@@ -17,14 +17,12 @@ namespace Mvp.Project.MvpSite.Controllers;
 
 public class LayoutController : Controller
 {
-    private readonly ISitecoreLayoutClient _layoutClient;
     private readonly IOptionsSnapshot<HttpLayoutRequestHandlerOptions> _options;
     private readonly HttpClient _client;
     private readonly ISitecoreLayoutSerializer _serializer;
 
-    public LayoutController(ISitecoreLayoutClient layoutClient, IOptionsSnapshot<HttpLayoutRequestHandlerOptions> options, IHttpClientFactory httpClientFactory, ISitecoreLayoutSerializer serializer)
+    public LayoutController(IOptionsSnapshot<HttpLayoutRequestHandlerOptions> options, IHttpClientFactory httpClientFactory, ISitecoreLayoutSerializer serializer)
     {
-        _layoutClient = layoutClient;
         _options = options;
         _serializer = serializer;
         _client = httpClientFactory.CreateClient("httpClient");
@@ -39,19 +37,15 @@ public class LayoutController : Controller
             { "item", item },
             { "sc_lang", sc_lang }
         };
-        var test = await _layoutClient.Request(sitecoreLayoutRequest);
 
         HttpLayoutRequestHandlerOptions options = this._options.Get("httpClient");
         var message = this.BuildMessage(sitecoreLayoutRequest, options);
         var response = await this._client.SendAsync(message);
         
-        if (response.IsSuccessStatusCode)
-        {
-            string str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var content = this._serializer.Deserialize(str);
-        }
+        string str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var content = this._serializer.Deserialize(str);
         
-        test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
+        content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
         
         Placeholder mainPlaceholderAbout = mainAbout as Placeholder;
         if (mainPlaceholderAbout != null) 
@@ -69,7 +63,7 @@ public class LayoutController : Controller
                         if (heroSubtitle != null)
                         {
                             // Create a new JToken with the updated subtitle
-                            JToken subtitleToken = JToken.FromObject(new { value = heroSubtitle.Value + " updated text" });
+                            JToken subtitleToken = JToken.FromObject(new { value = heroSubtitle.Value + " updated text from custom http client" });
         
                             // Use the existing serializer or create a new one if necessary
                             JsonSerializer serializer = new JsonSerializer();
@@ -95,7 +89,7 @@ public class LayoutController : Controller
             }
         };
         
-        var json = JsonConvert.SerializeObject(test.Content, jsonSettings);
+        var json = JsonConvert.SerializeObject(content, jsonSettings);
         return Content(json, "application/json");
     }
     
