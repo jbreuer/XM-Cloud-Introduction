@@ -20,11 +20,13 @@ public class LayoutController : Controller
     private readonly ISitecoreLayoutClient _layoutClient;
     private readonly IOptionsSnapshot<HttpLayoutRequestHandlerOptions> _options;
     private readonly HttpClient _client;
+    private readonly ISitecoreLayoutSerializer _serializer;
 
-    public LayoutController(ISitecoreLayoutClient layoutClient, IOptionsSnapshot<HttpLayoutRequestHandlerOptions> options, IHttpClientFactory httpClientFactory)
+    public LayoutController(ISitecoreLayoutClient layoutClient, IOptionsSnapshot<HttpLayoutRequestHandlerOptions> options, IHttpClientFactory httpClientFactory, ISitecoreLayoutSerializer serializer)
     {
         _layoutClient = layoutClient;
         _options = options;
+        _serializer = serializer;
         _client = httpClientFactory.CreateClient("httpClient");
     }
     
@@ -46,6 +48,7 @@ public class LayoutController : Controller
         if (response.IsSuccessStatusCode)
         {
             string str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var content = this._serializer.Deserialize(str);
         }
         
         test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
