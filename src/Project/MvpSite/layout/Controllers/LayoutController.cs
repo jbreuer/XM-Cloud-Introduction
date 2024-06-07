@@ -19,11 +19,13 @@ public class LayoutController : Controller
 {
     private readonly ISitecoreLayoutClient _layoutClient;
     private readonly IOptionsSnapshot<HttpLayoutRequestHandlerOptions> _options;
+    private readonly HttpClient _client;
 
-    public LayoutController(ISitecoreLayoutClient layoutClient, IOptionsSnapshot<HttpLayoutRequestHandlerOptions> options)
+    public LayoutController(ISitecoreLayoutClient layoutClient, IOptionsSnapshot<HttpLayoutRequestHandlerOptions> options, IHttpClientFactory httpClientFactory)
     {
         _layoutClient = layoutClient;
         _options = options;
+        _client = httpClientFactory.CreateClient("httpClient");
     }
     
     public async Task<IActionResult> Index(string item, string sc_apikey, string sc_site, string sc_lang)
@@ -36,16 +38,15 @@ public class LayoutController : Controller
             { "sc_lang", sc_lang }
         };
         var test = await _layoutClient.Request(sitecoreLayoutRequest);
-        
-        HttpClient client = new HttpClient
-        {
-            //BaseAddress = new Uri("https://xmcloudcm.localhost/sitecore/api/layout/render/jss")
-            BaseAddress = new Uri("https://xmcloudcm.localhost")
-        };
-        
-        HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, client.BaseAddress);
 
-        HttpLayoutRequestHandlerOptions options = this._options.Get("default");
+        HttpLayoutRequestHandlerOptions options = this._options.Get("httpClient");
+        var message = this.BuildMessage(sitecoreLayoutRequest, options);
+        var response = await this._client.SendAsync(message);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            string str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        }
         
         test.Content.Sitecore.Route.Placeholders.TryGetValue("main", out var mainAbout);
         
@@ -93,6 +94,19 @@ public class LayoutController : Controller
         
         var json = JsonConvert.SerializeObject(test.Content, jsonSettings);
         return Content(json, "application/json");
+    }
+    
+    protected virtual HttpRequestMessage BuildMessage(
+        SitecoreLayoutRequest request,
+        HttpLayoutRequestHandlerOptions options)
+    {
+        HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, this._client.BaseAddress);
+        if (options != null)
+        {
+            foreach (Action<SitecoreLayoutRequest, HttpRequestMessage> request1 in options.RequestMap)
+                request1(request, httpRequestMessage);
+        }
+        return httpRequestMessage;
     }
     
 }

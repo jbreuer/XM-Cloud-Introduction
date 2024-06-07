@@ -82,7 +82,12 @@ namespace Mvp.Project.MvpSite
               // .AsDefaultHandler();
             // services.AddFeatureUser(DotNetConfiguration);
             
-            services.Configure<HttpLayoutRequestHandlerOptions>("default", options =>
+            services.AddHttpClient("httpClient", client =>
+            {
+                client.BaseAddress = new Uri("https://xmcloudcm.localhost/sitecore/api/layout/render/jss");
+            });
+            
+            services.Configure<HttpLayoutRequestHandlerOptions>("httpClient", options =>
             {
                 options.RequestMap.Add((request, message) =>
                 {
