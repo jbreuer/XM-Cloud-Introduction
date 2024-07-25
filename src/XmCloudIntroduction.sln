@@ -102,6 +102,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BehavioralPersonalization",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mvp.Project.MvpSite.Layout", "Project\MvpSite\layout\Mvp.Project.MvpSite.Layout.csproj", "{BC03AA84-0782-4CD3-94B0-916D5076CAEB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LayoutService", "Environment\LayoutService\LayoutService.csproj", "{DD8532A1-5AD2-46F5-8BF0-FE9100950C79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -156,6 +158,10 @@ Global
 		{BC03AA84-0782-4CD3-94B0-916D5076CAEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC03AA84-0782-4CD3-94B0-916D5076CAEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC03AA84-0782-4CD3-94B0-916D5076CAEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD8532A1-5AD2-46F5-8BF0-FE9100950C79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD8532A1-5AD2-46F5-8BF0-FE9100950C79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD8532A1-5AD2-46F5-8BF0-FE9100950C79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD8532A1-5AD2-46F5-8BF0-FE9100950C79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -185,6 +191,7 @@ Global
 		{A3BB19D0-CE43-4EE3-8B52-72E95B19E5A4} = {EE03412B-647E-416F-84A1-427E692BBBDB}
 		{FA0F7310-D73E-40CE-8918-3D9B0B929EC8} = {EE03412B-647E-416F-84A1-427E692BBBDB}
 		{BC03AA84-0782-4CD3-94B0-916D5076CAEB} = {C998ECA9-1528-444B-A9AB-538E01A45CEC}
+		{DD8532A1-5AD2-46F5-8BF0-FE9100950C79} = {34CC9337-BC03-4C14-A57A-FD29DEE5A9B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7A7C4987-3A11-41A9-8915-5457EF7B5A6F}
