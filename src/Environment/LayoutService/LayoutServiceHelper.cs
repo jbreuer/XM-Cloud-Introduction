@@ -53,54 +53,6 @@ public class LayoutServiceHelper
     }
 
     /// <summary>
-    /// Builds the hybrid placeholder data.
-    /// </summary>
-    /// <param name="route">The route containing placeholders and components.</param>
-    /// <param name="hybridPlaceholderData">The JObject to store hybrid placeholder data.</param>
-    /// <param name="componentConfigurations">The component configurations for updates.</param>
-    public void BuildHybridPlaceholderData(Route route, JObject hybridPlaceholderData, Dictionary<string, ComponentConfig> componentConfigurations)
-    {
-        foreach (var (placeholderName, value) in route.Placeholders)
-        {
-            AddComponentsToHybridPlaceholderData(placeholderName, value.OfType<Component>(), hybridPlaceholderData, componentConfigurations);
-        }
-    }
-
-    /// <summary>
-    /// Adds components to the hybrid placeholder data.
-    /// </summary>
-    /// <param name="placeholderName">The placeholder name.</param>
-    /// <param name="components">The components to add.</param>
-    /// <param name="hybridPlaceholderData">The JObject to store hybrid placeholder data.</param>
-    /// <param name="componentConfigurations">The component configurations for updates.</param>
-    public void AddComponentsToHybridPlaceholderData(string placeholderName, IEnumerable<Component> components, JObject hybridPlaceholderData, Dictionary<string, ComponentConfig> componentConfigurations)
-    {
-        foreach (var component in components)
-        {
-            if (componentConfigurations.TryGetValue(component.Name, out var value))
-            {
-                var componentObject = new JObject
-                {
-                    ["placeholderName"] = $"{placeholderName}",
-                };
-
-                if (value.UseSsr)
-                {
-                    componentObject["useSsr"] = true;
-                }
-
-                hybridPlaceholderData[component.Id] = componentObject;
-            }
-
-            foreach (var childPlaceholder in component.Placeholders)
-            {
-                var childPlaceholderName = $"/{placeholderName}/{childPlaceholder.Key}-{{{component.Id.ToUpper()}}}-0";
-                AddComponentsToHybridPlaceholderData(childPlaceholderName, childPlaceholder.Value.OfType<Component>(), hybridPlaceholderData, componentConfigurations);
-            }
-        }
-    }
-
-    /// <summary>
     /// Updates fields of a component based on the provided updates.
     /// </summary>
     /// <param name="component">The component to update.</param>

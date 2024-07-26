@@ -47,7 +47,6 @@ public class LayoutController : Controller
                     "HeroBig", 
                     new ComponentConfig
                     {
-                        UseSsr = true,
                         Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
                         {
                             { "HeroTitle", (" updated from core big", FieldType.TextField) }
@@ -58,7 +57,6 @@ public class LayoutController : Controller
                     "HeroMedium", 
                     new ComponentConfig
                     {
-                        UseSsr = false,
                         Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
                         {
                             { "HeroTitle", (" updated from core medium", FieldType.TextField) }
@@ -73,10 +71,6 @@ public class LayoutController : Controller
                 _layoutServiceHelper.UpdateFieldsRecursively(content.Sitecore.Route, componentName, componentUpdates[componentName].Updates);
             }
 
-            // Build hybrid placeholder data and update the context
-            var hybridPlaceholderData = new JObject();
-            _layoutServiceHelper.BuildHybridPlaceholderData(content?.Sitecore?.Route, hybridPlaceholderData, componentUpdates);
-            context["hybridPlaceholderData"] = hybridPlaceholderData;
             content.ContextRawData = JsonConvert.SerializeObject(context);
         }
 
