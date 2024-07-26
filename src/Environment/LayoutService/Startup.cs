@@ -90,6 +90,12 @@ namespace LayoutService
                     "/sitecore/api/layout/render/jss",
                     new { controller = "Layout", action = "Item" }
                 );
+                
+                endpoints.MapControllerRoute(
+                    "graph",
+                    "graph",
+                    new { controller = "Graph", action = "Index" }
+                );
             });
         }
     }
