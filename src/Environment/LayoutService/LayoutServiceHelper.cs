@@ -131,16 +131,6 @@ public class LayoutServiceHelper
     }
 
     /// <summary>
-    /// Gets the current date formatted as a string.
-    /// </summary>
-    /// <returns>The formatted date string.</returns>
-    public string GetDate()
-    {
-        Thread.Sleep(1500); // Simulate delay
-        return DateTime.Now.ToString("f", CultureInfo.GetCultureInfo("en-US"));
-    }
-
-    /// <summary>
     /// Builds the HTTP request message for the given path and request.
     /// </summary>
     /// <param name="path">The path to the endpoint.</param>
