@@ -90,12 +90,6 @@ namespace LayoutService
                     "/sitecore/api/layout/render/jss",
                     new { controller = "Layout", action = "Item" }
                 );
-                
-                endpoints.MapControllerRoute(
-                    "placeholder",
-                    "sitecore/api/layout/placeholder/jss",
-                    new { controller = "Layout", action = "Placeholder" }
-                );
             });
         }
     }
