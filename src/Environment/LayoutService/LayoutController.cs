@@ -44,26 +44,24 @@ public class LayoutController : Controller
             var componentUpdates = new Dictionary<string, ComponentConfig>
             {
                 { 
-                    "HybridPlaceholderExampleSection", 
+                    "HeroBig", 
                     new ComponentConfig
                     {
                         UseSsr = true,
                         Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
                         {
-                            { "title", ("", FieldType.TextField) },
-                            { "text", (new { value = "<br/>From core." }, FieldType.RichTextField) }
+                            { "HeroTitle", (" updated from core big", FieldType.TextField) }
                         }
                     }
                 },
                 { 
-                    "HybridPlaceholderExampleNoSsrSection", 
+                    "HeroMedium", 
                     new ComponentConfig
                     {
                         UseSsr = false,
                         Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
                         {
-                            { "title", ("", FieldType.TextField) },
-                            { "text", (new { value = "<br/>From core no SSR." }, FieldType.RichTextField) }
+                            { "HeroTitle", (" updated from core medium", FieldType.TextField) }
                         }
                     }
                 }
@@ -175,7 +173,9 @@ public class LayoutController : Controller
         var validItemIds = new HashSet<string>
         {
             "c91b1c4b-c37b-4709-b6b7-3c83053b9f0d",
-            "c7dc292c-9faf-473a-a9c6-6a2bc3765e04"
+            "c7dc292c-9faf-473a-a9c6-6a2bc3765e04",
+            "94de9ac3-a9f7-40ab-ae90-acda364b9c40",
+            "0d97b45d-c589-4495-a495-9aaff4fbd2c3"
         };
 
         // Check if the item ID is in the set of valid IDs

@@ -107,17 +107,9 @@ public class LayoutServiceHelper
     /// <param name="updates">The updates to apply.</param>
     public void UpdateFields(Component component, Dictionary<string, (object newValue, FieldType fieldType)> updates)
     {
-        var fieldsToKeep = updates.Keys.Select(k => k.ToLower()).ToHashSet();
-
-        var fieldsToRemove = component.Fields.Keys.Where(k => !fieldsToKeep.Contains(k.ToLower())).ToList();
-        foreach (var field in fieldsToRemove)
-        {
-            component.Fields.Remove(field);
-        }
-
         foreach (var update in updates)
         {
-            var fieldName = update.Key.ToLower();
+            var fieldName = update.Key;
             var (newValue, fieldType) = update.Value;
 
             if (component.Fields.TryGetValue(fieldName, out var fieldReader))
@@ -133,7 +125,7 @@ public class LayoutServiceHelper
                 {
                     newValue = fieldType switch
                     {
-                        FieldType.TextField => $"{originalValue} {newValue}",
+                        FieldType.TextField => new { value = $"{originalValue} {newValue}" },
                         FieldType.RichTextField => new { value = $"{originalValue} {((dynamic)newValue).value}" },
                         _ => newValue
                     };
