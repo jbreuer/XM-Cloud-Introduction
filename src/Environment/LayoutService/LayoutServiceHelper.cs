@@ -78,7 +78,7 @@ public class LayoutServiceHelper
                     newValue = fieldType switch
                     {
                         FieldType.TextField => new { value = $"{originalValue} {newValue}" },
-                        FieldType.RichTextField => new { value = $"{originalValue} {((dynamic)newValue).value}" },
+                        FieldType.RichTextField => new { value = $"{originalValue} {newValue}" },
                         _ => newValue
                     };
                 }

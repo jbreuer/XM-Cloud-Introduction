@@ -49,7 +49,8 @@ public class LayoutController : Controller
                     {
                         Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
                         {
-                            { "HeroTitle", (" updated from core big", FieldType.TextField) }
+                            { "HeroTitle", (" updated from core big", FieldType.TextField) },
+                            { "HeroDescription", (" With extra text big.", FieldType.RichTextField) }
                         }
                     }
                 },
@@ -59,7 +60,8 @@ public class LayoutController : Controller
                     {
                         Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
                         {
-                            { "HeroTitle", (" updated from core medium", FieldType.TextField) }
+                            { "HeroTitle", (" updated from core medium", FieldType.TextField) },
+                            { "HeroDescription", (" With extra text medium.", FieldType.RichTextField) }
                         }
                     }
                 }
