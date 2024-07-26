@@ -3,14 +3,18 @@ using System.Web;
 using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Newtonsoft;
 using Sitecore.LayoutService.Client.Request;
+using Microsoft.Extensions.DependencyInjection;
+using Sitecore.LayoutService.Client.Newtonsoft.Extensions;
 
 namespace LayoutService
 {
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllers();
+        {   
+            services
+                .AddControllers()
+                .AddNewtonsoftJson(o => o.SerializerSettings.SetDefaults());;
 
             services.AddSingleton<ISitecoreLayoutSerializer, NewtonsoftLayoutServiceSerializer>();
             services.AddScoped<LayoutServiceHelper>();
