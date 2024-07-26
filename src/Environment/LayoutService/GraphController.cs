@@ -78,7 +78,7 @@ public class GraphController : Controller
                                         {
                                             // Create a new JToken with the updated subtitle
                                             JToken subtitleToken = JToken.FromObject(new
-                                                { value = heroSubtitle.Value + " updated text" });
+                                                { value = heroSubtitle.Value + " updated text from LayoutService" });
 
                                             // Use the existing serializer or create a new one if necessary
                                             Newtonsoft.Json.JsonSerializer serializer =

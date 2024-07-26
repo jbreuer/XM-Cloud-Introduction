@@ -12,11 +12,11 @@ import { JssConfig, jssConfigFactory } from './config';
 
 const defaultConfig: JssConfig = {
   sitecoreApiKey: 'B2F8A9B9-7203-4DCF-9314-8B28B043347E',
-  sitecoreApiHost: 'https://localhost:44367',
+  sitecoreApiHost: 'https://localhost:44380',
   jssAppName: 'sugconanz',
   graphQLEndpointPath: '/graph',
   defaultLanguage: 'en',
-  graphQLEndpoint: 'https://localhost:44367/graph',
+  graphQLEndpoint: 'https://localhost:44380/graph',
 };
 
 generateConfig(defaultConfig);
