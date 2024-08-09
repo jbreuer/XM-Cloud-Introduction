@@ -1,4 +1,5 @@
-using System.Globalization;
+using System.Net;
+using System.Web;
 using LayoutService;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -7,7 +8,6 @@ using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Newtonsoft;
 using Sitecore.LayoutService.Client.Newtonsoft.Converters;
 using Sitecore.LayoutService.Client.Newtonsoft.Model;
-using Sitecore.LayoutService.Client.Request;
 using Sitecore.LayoutService.Client.Response;
 using Sitecore.LayoutService.Client.Response.Model;
 using Sitecore.LayoutService.Client.Response.Model.Fields;
@@ -17,27 +17,55 @@ public class LayoutServiceHelper
 {
     private readonly HttpClient _client;
     private readonly ISitecoreLayoutSerializer _serializer;
-    private readonly IOptionsSnapshot<HttpLayoutRequestHandlerOptions> _options;
 
     public LayoutServiceHelper(IHttpClientFactory httpClientFactory, ISitecoreLayoutSerializer serializer, IOptionsSnapshot<HttpLayoutRequestHandlerOptions> options)
     {
         _client = httpClientFactory.CreateClient("httpClient");
         _serializer = serializer;
-        _options = options;
     }
 
     /// <summary>
     /// Fetches the layout data as a string from the specified endpoint.
     /// </summary>
     /// <param name="endpoint">The endpoint to fetch data from.</param>
-    /// <param name="request">The Sitecore layout request.</param>
-    /// <returns>The layout data as a string.</returns>
-    public async Task<string> FetchLayoutDataAsync(string endpoint, SitecoreLayoutRequest request)
+    /// <param name="incomingQuery">The querystring from the incoming request.</param>
+    /// <param name="incomingHeaders">The headers from the incoming request.</param>
+    /// <returns>A tuple containing the layout data as a string and the HTTP status code.</returns>
+    public async Task<(string, HttpStatusCode)> FetchLayoutDataAsync(string endpoint, IQueryCollection incomingQuery, IHeaderDictionary incomingHeaders)
     {
-        var options = _options.Get("httpClient");
-        var message = BuildMessage(endpoint, request, options);
+        var builder = new UriBuilder(_client.BaseAddress)
+        {
+            Path = endpoint
+        };
+
+        // Build the query string from incomingQuery
+        var query = HttpUtility.ParseQueryString(string.Empty);
+        foreach (var kvp in incomingQuery)
+        {
+            query[kvp.Key] = kvp.Value.ToString();
+        }
+        builder.Query = query.ToString();
+
+        var message = new HttpRequestMessage(HttpMethod.Get, builder.Uri);
+    
+        // List of headers to forward
+        var headersToForward = new List<string> { "Authorization", "Cookie", "User-Agent", "Referer" };
+
+        foreach (var header in incomingHeaders)
+        {
+            if (headersToForward.Contains(header.Key))
+            {
+                if (!message.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value))
+                {
+                    message.Content?.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value);
+                }
+            }
+        }
+    
         var response = await _client.SendAsync(message);
-        return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        return (responseContent, response.StatusCode);
     }
 
     /// <summary>
@@ -45,11 +73,24 @@ public class LayoutServiceHelper
     /// </summary>
     /// <param name="endpoint">The endpoint to fetch data from.</param>
     /// <param name="request">The Sitecore layout request.</param>
-    /// <returns>The deserialized SitecoreLayoutResponseContent object.</returns>
-    public async Task<SitecoreLayoutResponseContent> FetchLayoutDataContentAsync(string endpoint, SitecoreLayoutRequest request)
+    /// <param name="incomingHeaders">The headers from the incoming request.</param>
+    /// <returns>A tuple containing the deserialized SitecoreLayoutResponseContent object (if applicable), the raw response content, and the HTTP status code.</returns>
+    public async Task<(SitecoreLayoutResponseContent, string, HttpStatusCode)> FetchLayoutDataContentAsync(string endpoint, IQueryCollection incomingQuery, IHeaderDictionary incomingHeaders)
     {
-        var str = await FetchLayoutDataAsync(endpoint, request);
-        return _serializer.Deserialize(str);
+        var (responseContent, statusCode) = await FetchLayoutDataAsync(endpoint, incomingQuery, incomingHeaders);
+        if (statusCode == HttpStatusCode.OK)
+        {
+            if (responseContent.TrimStart().StartsWith("{\"sitecore\":") && responseContent.Contains("\"route\":"))
+            {
+                return (_serializer.Deserialize(responseContent), null, statusCode)!;    
+            }
+            else
+            {
+                return (null, responseContent, statusCode)!;
+            }
+        }
+
+        return (null, null, statusCode)!;
     }
 
     /// <summary>
@@ -68,8 +109,8 @@ public class LayoutServiceHelper
             {
                 object? originalValue = fieldType switch
                 {
-                    FieldType.TextField => fieldReader.Read<TextField>()?.Value,
-                    FieldType.RichTextField => fieldReader.Read<RichTextField>()?.Value,
+                    FieldType.TextField => fieldReader.TryRead<TextField>(out var textField) ? textField.Value : null,
+                    FieldType.RichTextField => fieldReader.TryRead<RichTextField>(out var richTextField) ? richTextField.Value : null,
                     _ => null
                 };
 
@@ -128,34 +169,6 @@ public class LayoutServiceHelper
         {
             UpdateFieldsRecursively(childComponent, componentName, updates);
         }
-    }
-
-    /// <summary>
-    /// Builds the HTTP request message for the given path and request.
-    /// </summary>
-    /// <param name="path">The path to the endpoint.</param>
-    /// <param name="request">The Sitecore layout request.</param>
-    /// <param name="options">The options for the request.</param>
-    /// <returns>The constructed HttpRequestMessage.</returns>
-    public HttpRequestMessage BuildMessage(string path, SitecoreLayoutRequest request, HttpLayoutRequestHandlerOptions? options)
-    {
-        var builder = new UriBuilder(_client.BaseAddress)
-        {
-            Path = path
-        };
-
-        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, builder.Uri);
-        if (options == null)
-        {
-            return httpRequestMessage;
-        }
-
-        foreach (var request1 in options.RequestMap)
-        {
-            request1(request, httpRequestMessage);
-        }
-
-        return httpRequestMessage;
     }
 
     /// <summary>

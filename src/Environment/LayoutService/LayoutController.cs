@@ -1,12 +1,8 @@
+using System.Net;
 using LayoutService;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Sitecore.LayoutService.Client.Newtonsoft.Model;
-using Sitecore.LayoutService.Client.Request;
-using Sitecore.LayoutService.Client.Response.Model;
-
 public class LayoutController : Controller
 {
     private readonly LayoutServiceHelper _layoutServiceHelper;
@@ -19,23 +15,19 @@ public class LayoutController : Controller
     /// <summary>
     /// Fetches the layout data for a given item and updates fields based on specific criteria.
     /// </summary>
-    /// <param name="item">The item identifier.</param>
-    /// <param name="sc_apikey">The Sitecore API key.</param>
-    /// <param name="sc_site">The Sitecore site.</param>
-    /// <param name="sc_lang">The Sitecore language.</param>
     /// <returns>The updated layout data in JSON format.</returns>
-    public async Task<IActionResult> Item(string item, string sc_apikey, string sc_site, string sc_lang)
+    public async Task<IActionResult> Item()
     {
-        var sitecoreLayoutRequest = new SitecoreLayoutRequest
-        {
-            { "sc_site", sc_site },
-            { "sc_apikey", sc_apikey },
-            { "item", item },
-            { "sc_lang", sc_lang }
-        };
-
         // Fetch the layout data content from Sitecore
-        var content = await _layoutServiceHelper.FetchLayoutDataContentAsync("sitecore/api/layout/render/jss", sitecoreLayoutRequest);
+        var (content, json, statusCode) = await _layoutServiceHelper.FetchLayoutDataContentAsync("sitecore/api/layout/render/jss", Request.Query, Request.Headers);
+        if (statusCode != HttpStatusCode.OK)
+        {
+            return StatusCode((int)statusCode);
+        }
+        if (!string.IsNullOrEmpty(json))
+        {
+            return Content(json, "application/json");
+        }
         var context = JsonConvert.DeserializeObject<JObject>(content?.ContextRawData);
 
         // Check if the changes should be applied based on the item ID
@@ -88,8 +80,8 @@ public class LayoutController : Controller
             }
         };
 
-        var json = JsonConvert.SerializeObject(result, jsonSettings);
-        return Content(json, "application/json");
+        var contentJson = JsonConvert.SerializeObject(result, jsonSettings);
+        return Content(contentJson, "application/json");
     }
 
     /// <summary>
