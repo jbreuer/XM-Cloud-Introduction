@@ -24,17 +24,18 @@ public class GraphController : Controller
 {
     private readonly ISitecoreLayoutSerializer _serializer;
     private readonly LayoutServiceHelper _layoutServiceHelper;
+    private readonly GraphQLHttpClient _graphQLClient;
 
-    public GraphController(ISitecoreLayoutSerializer serializer, LayoutServiceHelper layoutServiceHelper)
+    public GraphController(ISitecoreLayoutSerializer serializer, LayoutServiceHelper layoutServiceHelper, GraphQLHttpClient graphQLClient)
     {
         this._serializer = serializer;
         this._layoutServiceHelper = layoutServiceHelper;
+        this._graphQLClient = graphQLClient;
     }
     
     public async Task<IActionResult> Index([FromBody] GraphQLRequest request)
     {
-        GraphQLHttpClient client = new GraphQLHttpClient("https://xmcloudcm.localhost/sitecore/api/graph/edge", (IGraphQLWebsocketJsonSerializer) new SystemTextJsonSerializer());
-        client.HttpClient.DefaultRequestHeaders.Add("sc_apikey", "{E2F3D43E-B1FD-495E-B4B1-84579892422A}");
+        _graphQLClient.HttpClient.DefaultRequestHeaders.Add("sc_apikey", "{E2F3D43E-B1FD-495E-B4B1-84579892422A}");
         var graphqlRequest = new GraphQLRequest()
         {
             Query = request.Query,
@@ -46,7 +47,7 @@ public class GraphController : Controller
 
         if (request.Query.Contains("rendered"))
         {
-            result = await client.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
+            result = await _graphQLClient.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
             string renderedJson = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
 
             if (!string.IsNullOrWhiteSpace(renderedJson))
@@ -63,7 +64,7 @@ public class GraphController : Controller
         }
         else
         {
-            result = await client.SendQueryAsync<object>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);    
+            result = await _graphQLClient.SendQueryAsync<object>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);    
         }
         
         

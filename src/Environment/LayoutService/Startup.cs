@@ -1,5 +1,7 @@
 using System.Net.Http.Headers;
 using System.Web;
+using GraphQL.Client.Http;
+using GraphQL.Client.Serializer.SystemTextJson;
 using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Newtonsoft;
 using Sitecore.LayoutService.Client.Request;
@@ -23,6 +25,8 @@ namespace LayoutService
             {
                 client.BaseAddress = new Uri("https://xmcloudcm.localhost/sitecore/api/layout/render/jss");
             });
+
+            services.AddScoped(x => new GraphQLHttpClient("https://xmcloudcm.localhost/sitecore/api/graph/edge", new SystemTextJsonSerializer()));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
