@@ -1,39 +1,27 @@
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using GraphQL;
-using GraphQL.Client.Abstractions.Websocket;
-using GraphQL.Client.Http;
-using GraphQL.Client.Serializer.SystemTextJson;
-using LayoutService;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Sitecore.LayoutService.Client;
-using Sitecore.LayoutService.Client.Newtonsoft;
-using Sitecore.LayoutService.Client.Newtonsoft.Model;
 using Sitecore.LayoutService.Client.RequestHandlers.GraphQL;
 using Sitecore.LayoutService.Client.Response;
-using Sitecore.LayoutService.Client.Response.Model;
-using Sitecore.LayoutService.Client.Response.Model.Fields;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+
+namespace LayoutService;
 
 public class GraphController : Controller
 {
-    private readonly ISitecoreLayoutSerializer _serializer;
     private readonly LayoutServiceHelper _layoutServiceHelper;
 
-    public GraphController(ISitecoreLayoutSerializer serializer, LayoutServiceHelper layoutServiceHelper)
+    public GraphController(LayoutServiceHelper layoutServiceHelper)
     {
-        this._serializer = serializer;
-        this._layoutServiceHelper = layoutServiceHelper;
+        _layoutServiceHelper = layoutServiceHelper;
     }
     
     public async Task<IActionResult> Index([FromBody] GraphQLRequest request)
     {   
-        var graphqlRequest = new GraphQLRequest()
+        var graphqlRequest = new GraphQLRequest
         {
             Query = request.Query,
             OperationName = request.OperationName,
@@ -45,12 +33,12 @@ public class GraphController : Controller
         if (request.Query.Contains("rendered"))
         {
             result = await _layoutServiceHelper.FetchGraphQLDataAsync<LayoutQueryResponse>(graphqlRequest, Request.Headers);
-            string renderedJson = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
+            var renderedJson = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
 
             if (!string.IsNullOrWhiteSpace(renderedJson))
             {
                 var layoutContent = await _layoutServiceHelper.ProcessLayoutContentAsync(renderedJson);
-                if (ShouldApplyChanges(layoutContent.Sitecore.Route.ItemId))
+                if (ShouldApplyChanges(layoutContent?.Sitecore?.Route?.ItemId))
                 {
                     ApplyFieldUpdates(layoutContent);
                 }
@@ -113,7 +101,7 @@ public class GraphController : Controller
 
         foreach (var componentName in componentUpdates.Keys)
         {
-            _layoutServiceHelper.UpdateFieldsRecursively(layoutContent.Sitecore.Route, componentName, componentUpdates[componentName]);
+            _layoutServiceHelper.UpdateFieldsRecursively(layoutContent?.Sitecore?.Route, componentName, componentUpdates[componentName]);
         }
     }
 }

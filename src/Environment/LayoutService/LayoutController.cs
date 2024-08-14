@@ -1,9 +1,10 @@
 using System.Net;
-using LayoutService;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sitecore.LayoutService.Client.Response;
+
+namespace LayoutService;
 
 public class LayoutController : Controller
 {

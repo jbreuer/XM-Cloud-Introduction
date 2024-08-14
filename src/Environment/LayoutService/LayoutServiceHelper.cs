@@ -2,8 +2,6 @@ using System.Net;
 using System.Web;
 using GraphQL;
 using GraphQL.Client.Http;
-using LayoutService;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sitecore.LayoutService.Client;
@@ -14,6 +12,8 @@ using Sitecore.LayoutService.Client.Response;
 using Sitecore.LayoutService.Client.Response.Model;
 using Sitecore.LayoutService.Client.Response.Model.Fields;
 using Route = Sitecore.LayoutService.Client.Response.Model.Route;
+
+namespace LayoutService;
 
 public class LayoutServiceHelper
 {
