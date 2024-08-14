@@ -30,12 +30,10 @@ public class LayoutController : Controller
         {
             return Content(json, "application/json");
         }
-        var context = JsonConvert.DeserializeObject<JObject>(content?.ContextRawData);
 
         // Check if the changes should be applied based on the item ID
         if (ShouldApplyChanges(content?.Sitecore?.Route?.ItemId))
         {
-            content.ContextRawData = JsonConvert.SerializeObject(context);
             ApplyFieldUpdates(content);
         }
 
@@ -46,7 +44,7 @@ public class LayoutController : Controller
         {
             sitecore = new
             {
-                context = context,
+                context = JsonConvert.DeserializeObject<JObject>(content?.ContextRawData),
                 route = content?.Sitecore?.Route
             }
         };
