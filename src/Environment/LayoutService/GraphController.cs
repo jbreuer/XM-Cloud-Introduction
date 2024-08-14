@@ -35,7 +35,16 @@ public class GraphController : Controller
     
     public async Task<IActionResult> Index([FromBody] GraphQLRequest request)
     {
-        _graphQLClient.HttpClient.DefaultRequestHeaders.Add("sc_apikey", "{E2F3D43E-B1FD-495E-B4B1-84579892422A}");
+        var headersToForward = new List<string> { "sc_apikey", "Authorization", "Cookie", "User-Agent", "Referer" };
+        
+        foreach (var header in this.Request.Headers)
+        {
+            if (headersToForward.Contains(header.Key) && !_graphQLClient.HttpClient.DefaultRequestHeaders.Contains(header.Key))
+            {
+                _graphQLClient.HttpClient.DefaultRequestHeaders.Add(header.Key, header.Value.ToArray());
+            }
+        }
+        
         var graphqlRequest = new GraphQLRequest()
         {
             Query = request.Query,
@@ -67,7 +76,6 @@ public class GraphController : Controller
             result = await _graphQLClient.SendQueryAsync<object>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);    
         }
         
-        
         var jsonSettings = new JsonSerializerOptions
         {
             WriteIndented = true,
@@ -77,14 +85,6 @@ public class GraphController : Controller
         };
         
         var json = JsonSerializer.Serialize(result, jsonSettings);
-        
-        
-        // var content = result.Data.ToString();
-        // if (!string.IsNullOrEmpty(content))
-        // {
-        //     var response = JsonSerializer.Deserialize<LayoutQueryResponse>(content);    
-        // }
-        
         
         return Content(json, "application/json");
     }
