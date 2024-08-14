@@ -9,21 +9,26 @@ using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
 using LayoutService;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sitecore.LayoutService.Client;
 using Sitecore.LayoutService.Client.Newtonsoft;
 using Sitecore.LayoutService.Client.Newtonsoft.Model;
 using Sitecore.LayoutService.Client.RequestHandlers.GraphQL;
+using Sitecore.LayoutService.Client.Response;
 using Sitecore.LayoutService.Client.Response.Model;
 using Sitecore.LayoutService.Client.Response.Model.Fields;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 public class GraphController : Controller
 {
     private readonly ISitecoreLayoutSerializer _serializer;
+    private readonly LayoutServiceHelper _layoutServiceHelper;
 
-    public GraphController(ISitecoreLayoutSerializer serializer)
+    public GraphController(ISitecoreLayoutSerializer serializer, LayoutServiceHelper layoutServiceHelper)
     {
         this._serializer = serializer;
+        this._layoutServiceHelper = layoutServiceHelper;
     }
     
     public async Task<IActionResult> Index([FromBody] GraphQLRequest request)
@@ -42,76 +47,18 @@ public class GraphController : Controller
         if (request.Query.Contains("rendered"))
         {
             result = await client.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
-            string str = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
+            string renderedJson = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
 
-            if (!string.IsNullOrWhiteSpace(str))
+            if (!string.IsNullOrWhiteSpace(renderedJson))
             {
+                var jsonObject = JObject.Parse(renderedJson);
+                NormalizeFields(jsonObject);
 
+                var layoutContent = _serializer.Deserialize(jsonObject.ToString());
+                ApplyFieldUpdates(layoutContent);
 
-                var j = JObject.Parse(str);
-
-                // Preprocess JSON to handle empty objects/arrays and ensure consistency
-                NormalizeFields(j);
-
-                var content = this._serializer.Deserialize(j.ToString());
-
-                content.Sitecore.Route.Placeholders.TryGetValue("headless-main", out var headlessMain);
-
-                Placeholder main = headlessMain as Placeholder;
-                if (main != null)
-                {
-                    foreach (Component component in main)
-                    {
-                        component.Placeholders.TryGetValue("container-{*}", out var container);
-                        Placeholder containerPlaceholder = container as Placeholder;
-                        if (containerPlaceholder != null)
-                        {
-                            foreach (Component containerComponent in containerPlaceholder)
-                            {
-                                // Ensure the component has a HeroSubtitle field
-                                if (containerComponent.Fields.ContainsKey("Text"))
-                                {
-                                    if (containerComponent.Fields.TryGetValue("Text", out var fieldReaderHeroSubtitle))
-                                    {
-                                        var heroSubtitle = fieldReaderHeroSubtitle.Read<TextField>();
-                                        if (heroSubtitle != null)
-                                        {
-                                            // Create a new JToken with the updated subtitle
-                                            JToken subtitleToken = JToken.FromObject(new
-                                                { value = heroSubtitle.Value + " updated text from LayoutService" });
-
-                                            // Use the existing serializer or create a new one if necessary
-                                            Newtonsoft.Json.JsonSerializer serializer =
-                                                new Newtonsoft.Json.JsonSerializer();
-
-                                            // Create a new NewtonsoftFieldReader with the new JToken
-                                            NewtonsoftFieldReader newFieldReader =
-                                                new NewtonsoftFieldReader(serializer, subtitleToken);
-
-                                            // Update the component's Fields dictionary
-                                            containerComponent.Fields["Text"] = newFieldReader;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                var settings = new Newtonsoft.Json.JsonSerializerSettings
-                {
-                    Formatting = Newtonsoft.Json.Formatting.Indented,
-                    DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat,
-                    DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc,
-                    ContractResolver = CustomDataContractResolver.Instance,
-                    Converters = new List<Newtonsoft.Json.JsonConverter>
-                    {
-                        new NewtonsoftFieldReaderJsonConverter()
-                    }
-                };
-
-                var ok = Newtonsoft.Json.JsonConvert.SerializeObject(content, settings);
-                ((GraphQLResponse<LayoutQueryResponse>)result).Data.Layout.Item.Rendered = JsonDocument.Parse(ok).RootElement;
+                var serializedContent = JsonConvert.SerializeObject(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
+                ((GraphQLResponse<LayoutQueryResponse>)result).Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
             }
         }
         else
@@ -177,6 +124,29 @@ public class GraphController : Controller
             {
                 NormalizeFields(item);
             }
+        }
+    }
+    
+    /// <summary>
+    /// Applies the necessary field updates to the layout content.
+    /// </summary>
+    /// <param name="layoutContent">The deserialized layout content.</param>
+    private void ApplyFieldUpdates(SitecoreLayoutResponseContent layoutContent)
+    {
+        var componentUpdates = new Dictionary<string, Dictionary<string, (object newValue, FieldType fieldType)>>
+        {
+            {
+                "Hero",
+                new Dictionary<string, (object newValue, FieldType fieldType)>
+                {
+                    { "Text", (" updated text from LayoutService", FieldType.TextField) }
+                }
+            }
+        };
+
+        foreach (var componentName in componentUpdates.Keys)
+        {
+            _layoutServiceHelper.UpdateFieldsRecursively(layoutContent.Sitecore.Route, componentName, componentUpdates[componentName]);
         }
     }
 }
