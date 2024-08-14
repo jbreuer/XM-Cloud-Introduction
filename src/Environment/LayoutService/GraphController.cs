@@ -65,7 +65,10 @@ public class GraphController : Controller
                 NormalizeFields(jsonObject);
 
                 var layoutContent = _serializer.Deserialize(jsonObject.ToString());
-                ApplyFieldUpdates(layoutContent);
+                if (ShouldApplyChanges(layoutContent.Sitecore.Route.ItemId))
+                {
+                    ApplyFieldUpdates(layoutContent);
+                }
 
                 var serializedContent = JsonConvert.SerializeObject(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
                 ((GraphQLResponse<LayoutQueryResponse>)result).Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
@@ -126,6 +129,23 @@ public class GraphController : Controller
                 NormalizeFields(item);
             }
         }
+    }
+    
+    /// <summary>
+    /// Determines if changes should be applied based on the item ID.
+    /// </summary>
+    /// <param name="itemId">The item ID.</param>
+    /// <returns>True if changes should be applied, otherwise false.</returns>
+    private bool ShouldApplyChanges(string itemId)
+    {
+        var validItemIds = new HashSet<string>
+        {
+            "6f42eb7e-7dda-4ccd-b116-a136d10b0e3d",
+            "bf345f94-f106-4d63-b9c6-d79c1cf0abb5"
+        };
+
+        // Check if the item ID is in the set of valid IDs
+        return validItemIds.Contains(itemId.ToLower());
     }
     
     /// <summary>
