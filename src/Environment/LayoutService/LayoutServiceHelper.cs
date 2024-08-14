@@ -1,5 +1,7 @@
 using System.Net;
 using System.Web;
+using GraphQL;
+using GraphQL.Client.Http;
 using LayoutService;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -17,11 +19,13 @@ public class LayoutServiceHelper
 {
     private readonly HttpClient _client;
     private readonly ISitecoreLayoutSerializer _serializer;
+    private readonly GraphQLHttpClient _graphQLClient;
 
-    public LayoutServiceHelper(IHttpClientFactory httpClientFactory, ISitecoreLayoutSerializer serializer, IOptionsSnapshot<HttpLayoutRequestHandlerOptions> options)
+    public LayoutServiceHelper(IHttpClientFactory httpClientFactory, ISitecoreLayoutSerializer serializer, GraphQLHttpClient graphQLClient)
     {
         _client = httpClientFactory.CreateClient("httpClient");
         _serializer = serializer;
+        _graphQLClient = graphQLClient;
     }
 
     /// <summary>
@@ -91,6 +95,27 @@ public class LayoutServiceHelper
         }
 
         return (null, null, statusCode)!;
+    }
+    
+    /// <summary>
+    /// Fetches the layout data using GraphQLHttpClient, forwarding specific headers.
+    /// </summary>
+    public async Task<GraphQLResponse<T>> FetchGraphQLDataAsync<T>(GraphQLRequest request, IHeaderDictionary incomingHeaders)
+    {
+        // Forward specific headers
+        var headersToForward = new List<string> { "sc_apikey", "Authorization", "Cookie", "User-Agent", "Referer" };
+
+        foreach (var header in incomingHeaders)
+        {
+            if (headersToForward.Contains(header.Key) && !_graphQLClient.HttpClient.DefaultRequestHeaders.Contains(header.Key))
+            {
+                _graphQLClient.HttpClient.DefaultRequestHeaders.Add(header.Key, header.Value.ToArray());
+            }
+        }
+
+        // Send the GraphQL request and return the response
+        var result = await _graphQLClient.SendQueryAsync<T>(request, new CancellationToken()).ConfigureAwait(false);
+        return result;
     }
 
     /// <summary>

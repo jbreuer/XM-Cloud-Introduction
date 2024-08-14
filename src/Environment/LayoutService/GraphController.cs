@@ -24,27 +24,15 @@ public class GraphController : Controller
 {
     private readonly ISitecoreLayoutSerializer _serializer;
     private readonly LayoutServiceHelper _layoutServiceHelper;
-    private readonly GraphQLHttpClient _graphQLClient;
 
-    public GraphController(ISitecoreLayoutSerializer serializer, LayoutServiceHelper layoutServiceHelper, GraphQLHttpClient graphQLClient)
+    public GraphController(ISitecoreLayoutSerializer serializer, LayoutServiceHelper layoutServiceHelper)
     {
         this._serializer = serializer;
         this._layoutServiceHelper = layoutServiceHelper;
-        this._graphQLClient = graphQLClient;
     }
     
     public async Task<IActionResult> Index([FromBody] GraphQLRequest request)
-    {
-        var headersToForward = new List<string> { "sc_apikey", "Authorization", "Cookie", "User-Agent", "Referer" };
-        
-        foreach (var header in this.Request.Headers)
-        {
-            if (headersToForward.Contains(header.Key) && !_graphQLClient.HttpClient.DefaultRequestHeaders.Contains(header.Key))
-            {
-                _graphQLClient.HttpClient.DefaultRequestHeaders.Add(header.Key, header.Value.ToArray());
-            }
-        }
-        
+    {   
         var graphqlRequest = new GraphQLRequest()
         {
             Query = request.Query,
@@ -56,7 +44,7 @@ public class GraphController : Controller
 
         if (request.Query.Contains("rendered"))
         {
-            result = await _graphQLClient.SendQueryAsync<LayoutQueryResponse>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);
+            result = await _layoutServiceHelper.FetchGraphQLDataAsync<LayoutQueryResponse>(graphqlRequest, Request.Headers);
             string renderedJson = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
 
             if (!string.IsNullOrWhiteSpace(renderedJson))
@@ -76,7 +64,7 @@ public class GraphController : Controller
         }
         else
         {
-            result = await _graphQLClient.SendQueryAsync<object>(graphqlRequest, new CancellationToken()).ConfigureAwait(false);    
+            result = await _layoutServiceHelper.FetchGraphQLDataAsync<object>(graphqlRequest, Request.Headers).ConfigureAwait(false);    
         }
         
         var jsonSettings = new JsonSerializerOptions
