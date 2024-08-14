@@ -215,4 +215,52 @@ public class LayoutServiceHelper
             }
         };
     }
+    
+    /// <summary>
+    /// Processes the layout content JSON, normalizes fields, and deserializes it.
+    /// </summary>
+    public async Task<SitecoreLayoutResponseContent> ProcessLayoutContentAsync(string renderedJson)
+    {
+        var jsonObject = JObject.Parse(renderedJson);
+        NormalizeFields(jsonObject);
+
+        var layoutContent = _serializer.Deserialize(jsonObject.ToString());
+        return await Task.FromResult(layoutContent);
+    }
+    
+    /// <summary>
+    /// Normalizes the fields within the JSON structure.
+    /// </summary>
+    private void NormalizeFields(JToken token)
+    {
+        if (token.Type == JTokenType.Object)
+        {
+            var obj = (JObject)token;
+            foreach (var property in obj.Properties())
+            {
+                if (property.Name == "fields" && property.Value.Type == JTokenType.Array)
+                {
+                    var fieldsArray = (JArray)property.Value;
+                    var fieldsObject = new JObject();
+                    int index = 0;
+                    foreach (var item in fieldsArray)
+                    {
+                        fieldsObject[$"item{index++}"] = item;
+                    }
+                    obj[property.Name] = fieldsObject;
+                }
+                else
+                {
+                    NormalizeFields(property.Value);
+                }
+            }
+        }
+        else if (token.Type == JTokenType.Array)
+        {
+            foreach (var item in (JArray)token)
+            {
+                NormalizeFields(item);
+            }
+        }
+    }
 }

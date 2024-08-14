@@ -49,10 +49,7 @@ public class GraphController : Controller
 
             if (!string.IsNullOrWhiteSpace(renderedJson))
             {
-                var jsonObject = JObject.Parse(renderedJson);
-                NormalizeFields(jsonObject);
-
-                var layoutContent = _serializer.Deserialize(jsonObject.ToString());
+                var layoutContent = await _layoutServiceHelper.ProcessLayoutContentAsync(renderedJson);
                 if (ShouldApplyChanges(layoutContent.Sitecore.Route.ItemId))
                 {
                     ApplyFieldUpdates(layoutContent);
@@ -78,45 +75,6 @@ public class GraphController : Controller
         var json = JsonSerializer.Serialize(result, jsonSettings);
         
         return Content(json, "application/json");
-    }
-    
-    void NormalizeFields(JToken token)
-    {
-        if (token.Type == JTokenType.Object)
-        {
-            var obj = (JObject)token;
-            foreach (var property in obj.Properties())
-            {
-                if (property.Name == "fields" && property.Value.Type == JTokenType.Array)
-                {
-                    // Example logic to convert array to object if necessary
-                    var fieldsArray = (JArray)property.Value;
-                    var fieldsObject = new JObject();
-                    int index = 0;
-                    foreach (var item in fieldsArray)
-                    {
-                        fieldsObject[$"item{index++}"] = item;
-                    }
-                    obj[property.Name] = fieldsObject;
-                }
-                else if (property.Name == "fields" && property.Value.Type == JTokenType.Object)
-                {
-                    // Ensure nested fields are normalized
-                    NormalizeFields(property.Value);
-                }
-                else
-                {
-                    NormalizeFields(property.Value);
-                }
-            }
-        }
-        else if (token.Type == JTokenType.Array)
-        {
-            foreach (var item in (JArray)token)
-            {
-                NormalizeFields(item);
-            }
-        }
     }
     
     /// <summary>
