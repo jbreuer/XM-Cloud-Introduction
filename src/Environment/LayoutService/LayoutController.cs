@@ -3,6 +3,8 @@ using LayoutService;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Sitecore.LayoutService.Client.Response;
+
 public class LayoutController : Controller
 {
     private readonly LayoutServiceHelper _layoutServiceHelper;
@@ -33,39 +35,8 @@ public class LayoutController : Controller
         // Check if the changes should be applied based on the item ID
         if (ShouldApplyChanges(content?.Sitecore?.Route?.ItemId))
         {
-            var componentUpdates = new Dictionary<string, ComponentConfig>
-            {
-                { 
-                    "HeroBig", 
-                    new ComponentConfig
-                    {
-                        Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
-                        {
-                            { "HeroTitle", (" updated from core big", FieldType.TextField) },
-                            { "HeroDescription", (" With extra text big.", FieldType.RichTextField) }
-                        }
-                    }
-                },
-                { 
-                    "HeroMedium", 
-                    new ComponentConfig
-                    {
-                        Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
-                        {
-                            { "HeroTitle", (" updated from core medium", FieldType.TextField) },
-                            { "HeroDescription", (" With extra text medium.", FieldType.RichTextField) }
-                        }
-                    }
-                }
-            };
-
-            // Update fields in the components recursively
-            foreach (var componentName in componentUpdates.Keys)
-            {
-                _layoutServiceHelper.UpdateFieldsRecursively(content.Sitecore.Route, componentName, componentUpdates[componentName].Updates);
-            }
-
             content.ContextRawData = JsonConvert.SerializeObject(context);
+            ApplyFieldUpdates(content);
         }
 
         var jsonSettings = _layoutServiceHelper.CreateSerializerSettings();
@@ -101,5 +72,44 @@ public class LayoutController : Controller
 
         // Check if the item ID is in the set of valid IDs
         return validItemIds.Contains(itemId.ToLower());
+    }
+    
+    /// <summary>
+    /// Applies the necessary field updates to the layout content.
+    /// </summary>
+    /// <param name="layoutContent">The deserialized layout content.</param>
+    private void ApplyFieldUpdates(SitecoreLayoutResponseContent layoutContent)
+    {
+        var componentUpdates = new Dictionary<string, ComponentConfig>
+        {
+            { 
+                "HeroBig", 
+                new ComponentConfig
+                {
+                    Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
+                    {
+                        { "HeroTitle", (" updated from core big", FieldType.TextField) },
+                        { "HeroDescription", (" With extra text big.", FieldType.RichTextField) }
+                    }
+                }
+            },
+            { 
+                "HeroMedium", 
+                new ComponentConfig
+                {
+                    Updates = new Dictionary<string, (object newValue, FieldType fieldType)>
+                    {
+                        { "HeroTitle", (" updated from core medium", FieldType.TextField) },
+                        { "HeroDescription", (" With extra text medium.", FieldType.RichTextField) }
+                    }
+                }
+            }
+        };
+
+        // Update fields in the components recursively
+        foreach (var componentName in componentUpdates.Keys)
+        {
+            _layoutServiceHelper.UpdateFieldsRecursively(layoutContent.Sitecore.Route, componentName, componentUpdates[componentName].Updates);
+        }
     }
 }
