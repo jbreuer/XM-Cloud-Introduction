@@ -1,8 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Sitecore.LayoutService.Client.Response;
+using System.Text.Json;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Response;
 
 namespace LayoutService;
 
@@ -38,19 +37,19 @@ public class LayoutController : Controller
             ApplyFieldUpdates(content);
         }
 
-        var jsonSettings = _layoutServiceHelper.CreateSerializerSettings();
+        var jsonOptions = _layoutServiceHelper.CreateSerializerSettings();
 
         // Construct the final JSON result
         var result = new
         {
             sitecore = new
             {
-                context = JsonConvert.DeserializeObject<JObject>(content?.ContextRawData),
+                context = JsonSerializer.Deserialize<JsonElement>(content?.ContextRawData, jsonOptions),
                 route = content?.Sitecore?.Route
             }
         };
 
-        var contentJson = JsonConvert.SerializeObject(result, jsonSettings);
+        var contentJson = JsonSerializer.Serialize(result, jsonOptions);
         return Content(contentJson, "application/json");
     }
 
