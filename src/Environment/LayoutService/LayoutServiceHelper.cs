@@ -1,17 +1,14 @@
 using System.Net;
+using System.Text.Json;
 using System.Web;
 using GraphQL;
 using GraphQL.Client.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Sitecore.LayoutService.Client;
-using Sitecore.LayoutService.Client.Newtonsoft;
-using Sitecore.LayoutService.Client.Newtonsoft.Converters;
-using Sitecore.LayoutService.Client.Newtonsoft.Model;
-using Sitecore.LayoutService.Client.Response;
-using Sitecore.LayoutService.Client.Response.Model;
-using Sitecore.LayoutService.Client.Response.Model.Fields;
-using Route = Sitecore.LayoutService.Client.Response.Model.Route;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Response;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Response.Model;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Response.Model.Fields;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Serialization;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Serialization.Fields;
+using Route = Sitecore.AspNetCore.SDK.LayoutService.Client.Response.Model.Route;
 
 namespace LayoutService;
 
@@ -149,10 +146,8 @@ public class LayoutServiceHelper
                     };
                 }
             }
-
-            var newValueToken = JToken.FromObject(newValue);
-            var serializer = new JsonSerializer();
-            var newFieldReader = new NewtonsoftFieldReader(serializer, newValueToken);
+            
+            var newFieldReader = new JsonSerializedField(JsonDocument.Parse(newValue.ToString()));
 
             component.Fields.Remove(fieldName);
             component.Fields[fieldName] = newFieldReader;
@@ -196,71 +191,22 @@ public class LayoutServiceHelper
         }
     }
 
-    /// <summary>
-    /// Creates the JSON serializer settings.
-    /// </summary>
-    /// <returns>The configured JsonSerializerSettings.</returns>
-    public JsonSerializerSettings CreateSerializerSettings()
+    public JsonSerializerOptions CreateSerializerSettings()
     {
-        return new JsonSerializerSettings
+        return new JsonSerializerOptions
         {
-            Formatting = Formatting.Indented,
-            DateFormatHandling = DateFormatHandling.IsoDateFormat,
-            DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-            ContractResolver = CustomDataContractResolver.Instance,
-            Converters = new List<JsonConverter>
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters =
             {
-                new NewtonsoftFieldReaderJsonConverter(),
-                new FieldReaderJsonConverter()
+                // TODO custom converter.
             }
         };
     }
     
-    /// <summary>
-    /// Processes the layout content JSON, normalizes fields, and deserializes it.
-    /// </summary>
-    public async Task<SitecoreLayoutResponseContent> ProcessLayoutContentAsync(string renderedJson)
+    public SitecoreLayoutResponseContent ProcessLayoutContentAsync(string renderedJson)
     {
-        var jsonObject = JObject.Parse(renderedJson);
-        NormalizeFields(jsonObject);
-
-        var layoutContent = _serializer.Deserialize(jsonObject.ToString());
-        return await Task.FromResult(layoutContent);
-    }
-    
-    /// <summary>
-    /// Normalizes the fields within the JSON structure.
-    /// </summary>
-    private void NormalizeFields(JToken token)
-    {
-        if (token.Type == JTokenType.Object)
-        {
-            var obj = (JObject)token;
-            foreach (var property in obj.Properties())
-            {
-                if (property.Name == "fields" && property.Value.Type == JTokenType.Array)
-                {
-                    var fieldsArray = (JArray)property.Value;
-                    var fieldsObject = new JObject();
-                    int index = 0;
-                    foreach (var item in fieldsArray)
-                    {
-                        fieldsObject[$"item{index++}"] = item;
-                    }
-                    obj[property.Name] = fieldsObject;
-                }
-                else
-                {
-                    NormalizeFields(property.Value);
-                }
-            }
-        }
-        else if (token.Type == JTokenType.Array)
-        {
-            foreach (var item in (JArray)token)
-            {
-                NormalizeFields(item);
-            }
-        }
+        var layoutContent = _serializer.Deserialize(renderedJson);
+        return layoutContent;
     }
 }
