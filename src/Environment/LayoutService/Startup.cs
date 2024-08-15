@@ -12,7 +12,11 @@ namespace LayoutService
         {
             services
                 .AddControllers()
-                .AddJsonOptions(o => o.JsonSerializerOptions.AddLayoutServiceDefaults());
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new GraphQLRequestConverter());
+                    options.JsonSerializerOptions.AddLayoutServiceDefaults();
+                });
 
             services.AddSingleton<ISitecoreLayoutSerializer, JsonLayoutServiceSerializer>();
             services.AddScoped<LayoutServiceHelper>();
