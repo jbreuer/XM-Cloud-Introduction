@@ -107,7 +107,7 @@ public class LayoutController : Controller
         // Update fields in the components recursively
         foreach (var componentName in componentUpdates.Keys)
         {
-            _layoutServiceHelper.UpdateFieldsRecursively(layoutContent.Sitecore.Route, componentName, componentUpdates[componentName].Updates);
+            _layoutServiceHelper.UpdateFieldsRecursively(layoutContent?.Sitecore?.Route, componentName, componentUpdates[componentName].Updates);
         }
     }
 }

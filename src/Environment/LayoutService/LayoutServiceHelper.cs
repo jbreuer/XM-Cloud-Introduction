@@ -76,7 +76,7 @@ public class LayoutServiceHelper
     /// Fetches the layout data and deserializes it into a SitecoreLayoutResponseContent object.
     /// </summary>
     /// <param name="endpoint">The endpoint to fetch data from.</param>
-    /// <param name="request">The Sitecore layout request.</param>
+    /// <param name="incomingQuery">The query from the incoming request.</param>
     /// <param name="incomingHeaders">The headers from the incoming request.</param>
     /// <returns>A tuple containing the deserialized SitecoreLayoutResponseContent object (if applicable), the raw response content, and the HTTP status code.</returns>
     public async Task<(SitecoreLayoutResponseContent, string, HttpStatusCode)> FetchLayoutDataContentAsync(string endpoint, IQueryCollection incomingQuery, IHeaderDictionary incomingHeaders)
@@ -151,28 +151,16 @@ public class LayoutServiceHelper
             }
 
 
-            JsonDocument jsonDocument = null;
+            JsonDocument jsonDocument;
             if (newValue is string jsonString)
             {
-                try
-                {
-                    jsonDocument = JsonDocument.Parse(jsonString);
-                    // Use jsonDocument here...
-                }
-                catch (JsonException ex)
-                {
-                    // Handle parsing errors
-                    Console.WriteLine($"JSON parsing error: {ex.Message}");
-                }
+                jsonDocument = JsonDocument.Parse(jsonString);
             }
             else
             {
-                // Serialize the object to JSON if it's not already a string
                 var serializedJson = JsonSerializer.Serialize(newValue);
                 jsonDocument = JsonDocument.Parse(serializedJson);
-                // Use jsonDocument here...
             }
-            
             
             var newFieldReader = new JsonSerializedField(jsonDocument);
 
@@ -218,6 +206,10 @@ public class LayoutServiceHelper
         }
     }
 
+    /// <summary>
+    /// Creates the JSON serializer settings.
+    /// </summary>
+    /// <returns>The configured JsonSerializerSettings.</returns>
     public JsonSerializerOptions CreateSerializerSettings()
     {
         return new JsonSerializerOptions
@@ -239,13 +231,10 @@ public class LayoutServiceHelper
     /// </summary>
     public SitecoreLayoutResponseContent ProcessLayoutContentAsync(string renderedJson)
     {
-        // Parse the JSON into a JsonNode, which allows modifications
-        var jsonObject = JsonNode.Parse(renderedJson).AsObject();
+        var jsonObject = JsonNode.Parse(renderedJson)?.AsObject();
         NormalizeFields(jsonObject);
 
-        // Serialize the normalized JSON back to a string and deserialize it
-        var normalizedJson = jsonObject.ToJsonString();
-        var layoutContent = _serializer.Deserialize(normalizedJson);
+        var layoutContent = _serializer.Deserialize(jsonObject.ToJsonString());
         return layoutContent;
     }
 
@@ -256,7 +245,7 @@ public class LayoutServiceHelper
     {
         if (node is JsonObject obj)
         {
-            foreach (var property in obj.ToList()) // Use ToList() to avoid modifying the collection while iterating
+            foreach (var property in obj.ToList())
             {
                 if (property.Key == "fields" && property.Value is JsonArray fieldsArray)
                 {
@@ -264,8 +253,7 @@ public class LayoutServiceHelper
                     int index = 0;
                     foreach (var item in fieldsArray)
                     {
-                        // Manually clone the item depending on its type
-                        JsonNode clonedItem = item switch
+                        var clonedItem = item switch
                         {
                             JsonObject jsonObj => JsonNode.Parse(jsonObj.ToJsonString()),
                             JsonArray jsonArr => JsonNode.Parse(jsonArr.ToJsonString()),

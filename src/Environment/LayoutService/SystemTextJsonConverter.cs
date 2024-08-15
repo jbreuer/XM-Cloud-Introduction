@@ -22,7 +22,7 @@ public class SystemTextJsonConverter : JsonConverter<JsonSerializedField>
             else if (jsonFieldValue is string jsonString)
             {
                 // If the _json field is a string, attempt to parse it as JSON
-                using (JsonDocument jsonDocument = JsonDocument.Parse(jsonString))
+                using (var jsonDocument = JsonDocument.Parse(jsonString))
                 {
                     jsonDocument.RootElement.WriteTo(writer);
                 }

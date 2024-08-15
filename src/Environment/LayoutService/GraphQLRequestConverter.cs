@@ -9,18 +9,22 @@ public class GraphQLRequestConverter : JsonConverter<GraphQLRequest>
     public override GraphQLRequest Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
+        {
             throw new JsonException();
+        }
 
         var request = new GraphQLRequest();
 
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.EndObject)
+            {
                 return request;
+            }
 
             if (reader.TokenType == JsonTokenType.PropertyName)
             {
-                string propertyName = reader.GetString();
+                var propertyName = reader.GetString();
 
                 reader.Read();
 
@@ -52,10 +56,7 @@ public class GraphQLRequestConverter : JsonConverter<GraphQLRequest>
     {
         writer.WriteStartObject();
 
-        if (value.Query != null)
-        {
-            writer.WriteString("query", value.Query);
-        }
+        writer.WriteString("query", value.Query);
 
         if (value.OperationName != null)
         {
@@ -65,7 +66,7 @@ public class GraphQLRequestConverter : JsonConverter<GraphQLRequest>
         if (value.Variables != null)
         {
             writer.WritePropertyName("variables");
-            writer.WriteRawValue(value.Variables.ToString());
+            writer.WriteRawValue(value.Variables?.ToString());
         }
 
         writer.WriteEndObject();
