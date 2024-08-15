@@ -1,24 +1,20 @@
-using System.Net.Http.Headers;
-using System.Web;
+
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
-using Sitecore.LayoutService.Client;
-using Sitecore.LayoutService.Client.Newtonsoft;
-using Sitecore.LayoutService.Client.Request;
-using Microsoft.Extensions.DependencyInjection;
-using Sitecore.LayoutService.Client.Newtonsoft.Extensions;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Extensions;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Serialization;
 
 namespace LayoutService
 {
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
-        {   
+        {
             services
                 .AddControllers()
-                .AddNewtonsoftJson(o => o.SerializerSettings.SetDefaults());;
+                .AddJsonOptions(o => o.JsonSerializerOptions.AddLayoutServiceDefaults());
 
-            services.AddSingleton<ISitecoreLayoutSerializer, NewtonsoftLayoutServiceSerializer>();
+            services.AddSingleton<ISitecoreLayoutSerializer, JsonLayoutServiceSerializer>();
             services.AddScoped<LayoutServiceHelper>();
             
             services.AddHttpClient("httpClient", client =>
