@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Web;
 using GraphQL;
@@ -233,9 +234,61 @@ public class LayoutServiceHelper
         };
     }
     
+    /// <summary>
+    /// Processes the layout content JSON, normalizes fields, and deserializes it.
+    /// </summary>
     public SitecoreLayoutResponseContent ProcessLayoutContentAsync(string renderedJson)
     {
-        var layoutContent = _serializer.Deserialize(renderedJson);
+        // Parse the JSON into a JsonNode, which allows modifications
+        var jsonObject = JsonNode.Parse(renderedJson).AsObject();
+        NormalizeFields(jsonObject);
+
+        // Serialize the normalized JSON back to a string and deserialize it
+        var normalizedJson = jsonObject.ToJsonString();
+        var layoutContent = _serializer.Deserialize(normalizedJson);
         return layoutContent;
+    }
+
+    /// <summary>
+    /// Normalizes the fields within the JSON structure.
+    /// </summary>
+    private void NormalizeFields(JsonNode node)
+    {
+        if (node is JsonObject obj)
+        {
+            foreach (var property in obj.ToList()) // Use ToList() to avoid modifying the collection while iterating
+            {
+                if (property.Key == "fields" && property.Value is JsonArray fieldsArray)
+                {
+                    var fieldsObject = new JsonObject();
+                    int index = 0;
+                    foreach (var item in fieldsArray)
+                    {
+                        // Manually clone the item depending on its type
+                        JsonNode clonedItem = item switch
+                        {
+                            JsonObject jsonObj => JsonNode.Parse(jsonObj.ToJsonString()),
+                            JsonArray jsonArr => JsonNode.Parse(jsonArr.ToJsonString()),
+                            JsonValue jsonVal => JsonValue.Create(jsonVal.GetValue<object>()),
+                            _ => null
+                        };
+
+                        fieldsObject[$"item{index++}"] = clonedItem;
+                    }
+                    obj[property.Key] = fieldsObject;
+                }
+                else
+                {
+                    NormalizeFields(property.Value);
+                }
+            }
+        }
+        else if (node is JsonArray array)
+        {
+            foreach (var item in array)
+            {
+                NormalizeFields(item);
+            }
+        }
     }
 }
