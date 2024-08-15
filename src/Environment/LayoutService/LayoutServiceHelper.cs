@@ -7,6 +7,7 @@ using Sitecore.AspNetCore.SDK.LayoutService.Client.Response;
 using Sitecore.AspNetCore.SDK.LayoutService.Client.Response.Model;
 using Sitecore.AspNetCore.SDK.LayoutService.Client.Response.Model.Fields;
 using Sitecore.AspNetCore.SDK.LayoutService.Client.Serialization;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Serialization.Converter;
 using Sitecore.AspNetCore.SDK.LayoutService.Client.Serialization.Fields;
 using Route = Sitecore.AspNetCore.SDK.LayoutService.Client.Response.Model.Route;
 
@@ -199,7 +200,8 @@ public class LayoutServiceHelper
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters =
             {
-                // TODO custom converter.
+                new SystemTextJsonConverter(),
+                new FieldConverter()
             }
         };
     }
