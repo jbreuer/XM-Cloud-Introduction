@@ -30,6 +30,7 @@
 
     <PackageReference Update="BuildWebCompiler" Version="1.12.405" />
     <PackageReference Update="GraphQL.Client" Version="4.0.2" />
+    <PackageReference Update="GraphQL.Client.Serializer.SystemTextJson" Version="4.0.2" />
     <PackageReference Update="GraphQL.Client.Serializer.Newtonsoft" Version="4.0.2" />
     <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.2" />
     <PackageReference Update="Microsoft.AspNetCore.Session" Version="2.2.0" />

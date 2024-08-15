@@ -7,8 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="GraphQL.Client" />
+    <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
-    <PackageReference Include="Sitecore.LayoutService.Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Sitecore.LayoutService.Client">
+      <HintPath>..\..\dlls\Sitecore.LayoutService.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.LayoutService.Client.Abstractions">
+      <HintPath>..\..\dlls\Sitecore.LayoutService.Client.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.LayoutService.Client.Json">
+      <HintPath>..\..\dlls\Sitecore.LayoutService.Client.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.LayoutService.Client.Newtonsoft">
+      <HintPath>..\..\dlls\Sitecore.LayoutService.Client.Newtonsoft.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
