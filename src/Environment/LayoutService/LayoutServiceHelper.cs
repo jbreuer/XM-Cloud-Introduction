@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Web;
 using GraphQL;
 using GraphQL.Client.Http;
@@ -224,8 +225,10 @@ public class LayoutServiceHelper
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters =
             {
-                new SystemTextJsonConverter(),
-                new FieldConverter()
+                new JsonStringEnumConverter(),
+                new FieldConverter(),
+                new PlaceholderFeatureConverter(new FieldParser()),
+                new SystemTextJsonConverter()
             }
         };
     }

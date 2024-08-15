@@ -13,8 +13,25 @@ public class SystemTextJsonConverter : JsonConverter<JsonSerializedField>
         var jsonFieldInfo = typeof(JsonSerializedField).GetField("_json", BindingFlags.NonPublic | BindingFlags.Instance);
         if (jsonFieldInfo != null)
         {
-            var jsonElement = (JsonElement)jsonFieldInfo.GetValue(value);
-            jsonElement.WriteTo(writer);  // Write the JsonElement directly to the writer
+            var jsonFieldValue = jsonFieldInfo.GetValue(value);
+
+            if (jsonFieldValue is JsonElement jsonElement)
+            {
+                jsonElement.WriteTo(writer);  // Write the JsonElement directly to the writer
+            }
+            else if (jsonFieldValue is string jsonString)
+            {
+                // If the _json field is a string, attempt to parse it as JSON
+                using (JsonDocument jsonDocument = JsonDocument.Parse(jsonString))
+                {
+                    jsonDocument.RootElement.WriteTo(writer);
+                }
+            }
+            else
+            {
+                // If the _json field is neither a JsonElement nor a string, handle the error
+                writer.WriteStringValue("Error: Unsupported JSON data type");
+            }
         }
         else
         {
