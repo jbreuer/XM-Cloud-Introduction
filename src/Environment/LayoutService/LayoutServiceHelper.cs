@@ -147,8 +147,32 @@ public class LayoutServiceHelper
                     };
                 }
             }
+
+
+            JsonDocument jsonDocument = null;
+            if (newValue is string jsonString)
+            {
+                try
+                {
+                    jsonDocument = JsonDocument.Parse(jsonString);
+                    // Use jsonDocument here...
+                }
+                catch (JsonException ex)
+                {
+                    // Handle parsing errors
+                    Console.WriteLine($"JSON parsing error: {ex.Message}");
+                }
+            }
+            else
+            {
+                // Serialize the object to JSON if it's not already a string
+                var serializedJson = JsonSerializer.Serialize(newValue);
+                jsonDocument = JsonDocument.Parse(serializedJson);
+                // Use jsonDocument here...
+            }
             
-            var newFieldReader = new JsonSerializedField(JsonDocument.Parse(newValue.ToString()));
+            
+            var newFieldReader = new JsonSerializedField(jsonDocument);
 
             component.Fields.Remove(fieldName);
             component.Fields[fieldName] = newFieldReader;
