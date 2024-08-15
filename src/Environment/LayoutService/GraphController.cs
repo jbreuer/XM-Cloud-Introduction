@@ -2,11 +2,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using GraphQL;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Sitecore.LayoutService.Client;
-using Sitecore.LayoutService.Client.RequestHandlers.GraphQL;
-using Sitecore.LayoutService.Client.Response;
-using JsonSerializer = System.Text.Json.JsonSerializer;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Request.Handlers.GraphQL;
+using Sitecore.AspNetCore.SDK.LayoutService.Client.Response;
 
 namespace LayoutService;
 
@@ -37,13 +34,13 @@ public class GraphController : Controller
 
             if (!string.IsNullOrWhiteSpace(renderedJson))
             {
-                var layoutContent = await _layoutServiceHelper.ProcessLayoutContentAsync(renderedJson);
+                var layoutContent = _layoutServiceHelper.ProcessLayoutContentAsync(renderedJson);
                 if (ShouldApplyChanges(layoutContent?.Sitecore?.Route?.ItemId))
                 {
                     ApplyFieldUpdates(layoutContent);
                 }
 
-                var serializedContent = JsonConvert.SerializeObject(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
+                var serializedContent = JsonSerializer.Serialize(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
                 ((GraphQLResponse<LayoutQueryResponse>)result).Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
             }
         }
