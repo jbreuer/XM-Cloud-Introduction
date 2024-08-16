@@ -18,12 +18,13 @@ public class GraphController : Controller
     
     public async Task<IActionResult> Index([FromBody] GraphQLRequest graphqlRequest)
     {
-        object result = null;
+        object result;
 
         if (graphqlRequest.Query.Contains("rendered"))
         {
             result = await _layoutServiceHelper.FetchGraphQLDataAsync<LayoutQueryResponse>(graphqlRequest, Request.Headers);
-            var renderedJson = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
+            var layoutQueryResponse = result as GraphQLResponse<LayoutQueryResponse>;
+            var renderedJson = layoutQueryResponse?.Data?.Layout?.Item?.Rendered.ToString();
 
             if (!string.IsNullOrWhiteSpace(renderedJson))
             {
@@ -34,7 +35,7 @@ public class GraphController : Controller
                 }
 
                 var serializedContent = JsonSerializer.Serialize(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
-                ((GraphQLResponse<LayoutQueryResponse>)result).Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
+                layoutQueryResponse.Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
             }
         }
         else
@@ -49,7 +50,7 @@ public class GraphController : Controller
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
-        
+
         var json = JsonSerializer.Serialize(result, jsonSettings);
         
         return Content(json, "application/json");
