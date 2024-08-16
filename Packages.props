@@ -29,9 +29,6 @@
     <PackageReference Update="System.ServiceModel.Syndication" Version="$(DotNetVersion)" />
 
     <PackageReference Update="BuildWebCompiler" Version="1.12.405" />
-    <PackageReference Update="GraphQL.Client" Version="4.0.2" />
-    <PackageReference Update="GraphQL.Client.Serializer.SystemTextJson" Version="4.0.2" />
-    <PackageReference Update="GraphQL.Client.Serializer.Newtonsoft" Version="4.0.2" />
     <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.2" />
     <PackageReference Update="Microsoft.AspNetCore.Session" Version="2.2.0" />
     <PackageReference Update="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
@@ -40,5 +37,6 @@
     <PackageReference Update="StyleCop.Analyzers" Version="1.1.118" />
     <PackageReference Update="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageReference Update="Markdig" Version="0.34.0" />
+    <PackageReference Update="Sitecore.AspNetCore.SDK.LayoutService.Client" Version="0.0.7" />
   </ItemGroup>
 </Project>
