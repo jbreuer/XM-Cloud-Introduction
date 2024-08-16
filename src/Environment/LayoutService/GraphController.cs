@@ -16,18 +16,11 @@ public class GraphController : Controller
         _layoutServiceHelper = layoutServiceHelper;
     }
     
-    public async Task<IActionResult> Index([FromBody] GraphQLRequest request)
-    {   
-        var graphqlRequest = new GraphQLRequest
-        {
-            Query = request.Query,
-            OperationName = request.OperationName,
-            Variables = request.Variables?.ToString()
-        };
-
+    public async Task<IActionResult> Index([FromBody] GraphQLRequest graphqlRequest)
+    {
         object result = null;
 
-        if (request.Query.Contains("rendered"))
+        if (graphqlRequest.Query.Contains("rendered"))
         {
             result = await _layoutServiceHelper.FetchGraphQLDataAsync<LayoutQueryResponse>(graphqlRequest, Request.Headers);
             var renderedJson = ((GraphQLResponse<LayoutQueryResponse>)result)?.Data?.Layout?.Item?.Rendered.ToString();
@@ -46,7 +39,7 @@ public class GraphController : Controller
         }
         else
         {
-            result = await _layoutServiceHelper.FetchGraphQLDataAsync<object>(graphqlRequest, Request.Headers).ConfigureAwait(false);    
+            result = await _layoutServiceHelper.FetchGraphQLDataAsync<object>(graphqlRequest, Request.Headers).ConfigureAwait(false);
         }
         
         var jsonSettings = new JsonSerializerOptions
