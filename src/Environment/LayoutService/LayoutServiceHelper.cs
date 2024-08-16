@@ -221,7 +221,7 @@ public class LayoutServiceHelper
                 new JsonStringEnumConverter(),
                 new FieldConverter(),
                 new PlaceholderFeatureConverter(new FieldParser()),
-                new SystemTextJsonConverter()
+                new JsonSerializedFieldConverter()
             }
         };
     }
