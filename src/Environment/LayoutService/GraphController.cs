@@ -29,10 +29,7 @@ public class GraphController : Controller
             if (!string.IsNullOrWhiteSpace(renderedJson))
             {
                 var layoutContent = _layoutServiceHelper.ProcessLayoutContentAsync(renderedJson);
-                if (ShouldApplyChanges(layoutContent?.Sitecore?.Route?.ItemId))
-                {
-                    ApplyFieldUpdates(layoutContent);
-                }
+                ApplyFieldUpdates(layoutContent);
 
                 var serializedContent = JsonSerializer.Serialize(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
                 layoutQueryResponse.Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
@@ -57,52 +54,35 @@ public class GraphController : Controller
     }
     
     /// <summary>
-    /// Determines if changes should be applied based on the item ID.
-    /// </summary>
-    /// <param name="itemId">The item ID.</param>
-    /// <returns>True if changes should be applied, otherwise false.</returns>
-    private bool ShouldApplyChanges(string itemId)
-    {
-        var validItemIds = new HashSet<string>
-        {
-            "6f42eb7e-7dda-4ccd-b116-a136d10b0e3d",
-            "bf345f94-f106-4d63-b9c6-d79c1cf0abb5"
-        };
-
-        // Check if the item ID is in the set of valid IDs
-        return validItemIds.Contains(itemId.ToLower());
-    }
-    
-    /// <summary>
     /// Applies the necessary field updates to the layout content.
     /// </summary>
     /// <param name="layoutContent">The deserialized layout content.</param>
     private void ApplyFieldUpdates(SitecoreLayoutResponseContent layoutContent)
     {
-        var componentUpdates = new Dictionary<string, Dictionary<string, (object newValue, FieldType fieldType)>>
+        var itemId = layoutContent?.Sitecore?.Route?.ItemId;
+        
+        var componentUpdates = new Dictionary<string, Dictionary<string, (object newValue, FieldType fieldType)>>();
+        
+        if (itemId != null && itemId.Equals("6f42eb7e-7dda-4ccd-b116-a136d10b0e3d", StringComparison.InvariantCultureIgnoreCase))
         {
+            componentUpdates.Add("Hero", new Dictionary<string, (object newValue, FieldType fieldType)>
             {
-                "Hero",
-                new Dictionary<string, (object newValue, FieldType fieldType)>
-                {
-                    { "Text", (" updated text from LayoutService", FieldType.TextField) }
-                }
-            },
+                { "Text", (" updated text from LayoutService", FieldType.TextField) }
+            });
+            
+            componentUpdates.Add("CTA", new Dictionary<string, (object newValue, FieldType fieldType)>
             {
-                "CTA",
-                new Dictionary<string, (object newValue, FieldType fieldType)>
-                {
-                    { "Link", ("- Links can also be updated", FieldType.HyperLinkField) }
-                }
-            },
+                { "Link", ("- Links can also be updated", FieldType.HyperLinkField) }
+            });
+        }
+
+        if (itemId != null && itemId.Equals("bf345f94-f106-4d63-b9c6-d79c1cf0abb5", StringComparison.InvariantCultureIgnoreCase))
+        {
+            componentUpdates.Add("Agenda", new Dictionary<string, (object newValue, FieldType fieldType)>
             {
-                "Agenda",
-                new Dictionary<string, (object newValue, FieldType fieldType)>
-                {
-                    { "Title", ("- Update", FieldType.TextField) }
-                }
-            }
-        };
+                { "Title", ("- Update", FieldType.TextField) }
+            });
+        }
 
         foreach (var componentName in componentUpdates.Keys)
         {
