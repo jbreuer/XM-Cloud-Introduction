@@ -132,40 +132,52 @@ public class LayoutServiceHelper
 
             if (component.Fields.TryGetValue(fieldName, out var fieldReader))
             {
-                object? originalValue = fieldType switch
+                switch (fieldType)
                 {
-                    FieldType.TextField => fieldReader.TryRead<TextField>(out var textField) ? textField.Value : null,
-                    FieldType.RichTextField => fieldReader.TryRead<RichTextField>(out var richTextField) ? richTextField.Value : null,
-                    _ => null
-                };
+                    case FieldType.TextField:
+                        var text = fieldReader.TryRead<TextField>(out var textField) ? textField?.Value : null;
+                        if (text != null)
+                        {
+                            newValue = new { value = $"{text} {newValue}" };
+                        }
+                        break;
 
-                if (originalValue != null)
-                {
-                    newValue = fieldType switch
-                    {
-                        FieldType.TextField => new { value = $"{originalValue} {newValue}" },
-                        FieldType.RichTextField => new { value = $"{originalValue} {newValue}" },
-                        _ => newValue
-                    };
+                    case FieldType.RichTextField:
+                        var richText = fieldReader.TryRead<RichTextField>(out var richTextField) ? richTextField?.Value : null;
+                        if (richText != null)
+                        {
+                            newValue = new { value = $"{richText} {newValue}" };
+                        }
+                        break;
+
+                    case FieldType.HyperLinkField:
+                        var hyperLink = fieldReader.TryRead<HyperLinkField>(out var hyperLinkField) ? hyperLinkField?.Value : null;
+                        if (hyperLink != null)
+                        {
+                            hyperLink.Text += $" {newValue}";
+                            newValue = new
+                            {
+                                value = new
+                                {
+                                    href = hyperLink.Href,
+                                    text = hyperLink.Text,
+                                    linktype = hyperLink.Anchor,
+                                    url = hyperLink.Href,
+                                    anchor = hyperLink.Anchor,
+                                    title = hyperLink.Title,
+                                    @class = hyperLink.Class
+                                }
+                            };
+                        }
+                        break;
                 }
             }
 
-
-            JsonDocument jsonDocument;
-            if (newValue is string jsonString)
-            {
-                jsonDocument = JsonDocument.Parse(jsonString);
-            }
-            else
-            {
-                var serializedJson = JsonSerializer.Serialize(newValue);
-                jsonDocument = JsonDocument.Parse(serializedJson);
-            }
-            
+            var serializedJson = JsonSerializer.Serialize(newValue);
+            var jsonDocument = JsonDocument.Parse(serializedJson);
             var newFieldReader = new JsonSerializedField(jsonDocument);
 
-            component.Fields.Remove(fieldName);
-            component.Fields[fieldName] = newFieldReader;
+            component.Fields[fieldName] = newFieldReader;    
         }
     }
 
