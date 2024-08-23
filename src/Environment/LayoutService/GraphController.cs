@@ -87,6 +87,13 @@ public class GraphController : Controller
                 {
                     { "Text", (" updated text from LayoutService", FieldType.TextField) }
                 }
+            },
+            {
+                "CTA",
+                new Dictionary<string, (object newValue, FieldType fieldType)>
+                {
+                    { "Link", ("- Links can also be updated", FieldType.HyperLinkField) }
+                }
             }
         };
 
