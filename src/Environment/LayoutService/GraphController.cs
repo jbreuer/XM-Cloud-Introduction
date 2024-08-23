@@ -94,6 +94,13 @@ public class GraphController : Controller
                 {
                     { "Link", ("- Links can also be updated", FieldType.HyperLinkField) }
                 }
+            },
+            {
+                "Agenda",
+                new Dictionary<string, (object newValue, FieldType fieldType)>
+                {
+                    { "Title", ("- Update", FieldType.TextField) }
+                }
             }
         };
 
