@@ -1,4 +1,5 @@
 
+using System.Net.Http.Headers;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
 using Sitecore.AspNetCore.SDK.LayoutService.Client.Extensions;
@@ -24,6 +25,13 @@ namespace LayoutService
             services.AddHttpClient("httpClient", client =>
             {
                 client.BaseAddress = new Uri("https://xmcloudcm.localhost/sitecore/api/layout/render/jss");
+            });
+            
+            // WeatherService HttpClient
+            services.AddHttpClient<WeatherService>(client =>
+            {
+                client.BaseAddress = new Uri("https://api.openweathermap.org/");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
 
             services.AddScoped(x => new GraphQLHttpClient("https://xmcloudcm.localhost/sitecore/api/graph/edge", new SystemTextJsonSerializer()));

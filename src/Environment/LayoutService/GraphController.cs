@@ -10,10 +10,12 @@ namespace LayoutService;
 public class GraphController : Controller
 {
     private readonly LayoutServiceHelper _layoutServiceHelper;
+    private readonly WeatherService _weatherService;
 
-    public GraphController(LayoutServiceHelper layoutServiceHelper)
+    public GraphController(LayoutServiceHelper layoutServiceHelper, WeatherService weatherService)
     {
         _layoutServiceHelper = layoutServiceHelper;
+        _weatherService = weatherService;
     }
     
     public async Task<IActionResult> Index([FromBody] GraphQLRequest graphqlRequest)
@@ -29,7 +31,7 @@ public class GraphController : Controller
             if (!string.IsNullOrWhiteSpace(renderedJson))
             {
                 var layoutContent = _layoutServiceHelper.ProcessLayoutContentAsync(renderedJson);
-                ApplyFieldUpdates(layoutContent);
+                await ApplyFieldUpdates(layoutContent);
 
                 var serializedContent = JsonSerializer.Serialize(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
                 layoutQueryResponse.Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
@@ -57,7 +59,7 @@ public class GraphController : Controller
     /// Applies the necessary field updates to the layout content.
     /// </summary>
     /// <param name="layoutContent">The deserialized layout content.</param>
-    private void ApplyFieldUpdates(SitecoreLayoutResponseContent layoutContent)
+    private async Task ApplyFieldUpdates(SitecoreLayoutResponseContent layoutContent)
     {
         var itemId = layoutContent?.Sitecore?.Route?.ItemId;
         
@@ -78,9 +80,12 @@ public class GraphController : Controller
 
         if (itemId != null && itemId.Equals("bf345f94-f106-4d63-b9c6-d79c1cf0abb5", StringComparison.InvariantCultureIgnoreCase))
         {
+            var city = "Amsterdam";
+            var weatherInfo = await _weatherService.GetCurrentWeatherAsync(city);
+            
             componentUpdates.Add("Agenda", new Dictionary<string, (object newValue, FieldType fieldType)>
             {
-                { "Title", ("- Update", FieldType.TextField) }
+                { "Title", ("- Update\n\n" + weatherInfo, FieldType.TextField) }
             });
         }
 
