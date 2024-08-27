@@ -33,6 +33,8 @@ namespace LayoutService
                 client.BaseAddress = new Uri("https://api.openweathermap.org/");
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
+            
+            services.AddMemoryCache();
 
             services.AddScoped(x => new GraphQLHttpClient("https://xmcloudcm.localhost/sitecore/api/graph/edge", new SystemTextJsonSerializer()));
         }

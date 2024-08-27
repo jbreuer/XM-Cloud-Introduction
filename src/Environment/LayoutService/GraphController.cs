@@ -1,7 +1,11 @@
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using GraphQL;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Sitecore.AspNetCore.SDK.LayoutService.Client.Request.Handlers.GraphQL;
 using Sitecore.AspNetCore.SDK.LayoutService.Client.Response;
 
@@ -11,11 +15,13 @@ public class GraphController : Controller
 {
     private readonly LayoutServiceHelper _layoutServiceHelper;
     private readonly WeatherService _weatherService;
+    private readonly IMemoryCache _cache;
 
-    public GraphController(LayoutServiceHelper layoutServiceHelper, WeatherService weatherService)
+    public GraphController(LayoutServiceHelper layoutServiceHelper, WeatherService weatherService, IMemoryCache cache)
     {
         _layoutServiceHelper = layoutServiceHelper;
         _weatherService = weatherService;
+        _cache = cache;
     }
     
     public async Task<IActionResult> Index([FromBody] GraphQLRequest graphqlRequest)
@@ -24,18 +30,30 @@ public class GraphController : Controller
 
         if (graphqlRequest.Query.Contains("rendered"))
         {
-            result = await _layoutServiceHelper.FetchGraphQLDataAsync<LayoutQueryResponse>(graphqlRequest, Request.Headers);
-            var layoutQueryResponse = result as GraphQLResponse<LayoutQueryResponse>;
-            var renderedJson = layoutQueryResponse?.Data?.Layout?.Item?.Rendered.ToString();
+            var cacheKey = GenerateCacheKey(graphqlRequest.Query);
 
-            if (!string.IsNullOrWhiteSpace(renderedJson))
+            if (!_cache.TryGetValue(cacheKey, out object cachedResult))
             {
-                var layoutContent = _layoutServiceHelper.ProcessLayoutContentAsync(renderedJson);
-                await ApplyFieldUpdates(layoutContent);
+                cachedResult = await _layoutServiceHelper.FetchGraphQLDataAsync<LayoutQueryResponse>(graphqlRequest,
+                    Request.Headers);
+                var layoutQueryResponse = cachedResult as GraphQLResponse<LayoutQueryResponse>;
+                var renderedJson = layoutQueryResponse?.Data?.Layout?.Item?.Rendered.ToString();
 
-                var serializedContent = JsonSerializer.Serialize(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
-                layoutQueryResponse.Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
+                if (!string.IsNullOrWhiteSpace(renderedJson))
+                {
+                    var layoutContent = _layoutServiceHelper.ProcessLayoutContentAsync(renderedJson);
+                    await ApplyFieldUpdates(layoutContent);
+
+                    var serializedContent =
+                        JsonSerializer.Serialize(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
+                    layoutQueryResponse.Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
+                }
+                
+                // Cache each unique GraphQL query for 60 seconds
+                _cache.Set(cacheKey, cachedResult, TimeSpan.FromSeconds(60));
             }
+            
+            result = cachedResult;
         }
         else
         {
@@ -53,6 +71,18 @@ public class GraphController : Controller
         var json = JsonSerializer.Serialize(result, jsonSettings);
         
         return Content(json, "application/json");
+    }
+    
+    /// <summary>
+    /// Generates a unique cache key based on the GraphQL query string.
+    /// </summary>
+    private string GenerateCacheKey(string query)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(query));
+            return Convert.ToBase64String(hash);
+        }
     }
     
     /// <summary>
@@ -82,10 +112,11 @@ public class GraphController : Controller
         {
             var city = "Amsterdam";
             var weatherInfo = await _weatherService.GetCurrentWeatherAsync(city);
+            var date = DateTime.Now.ToString("F", CultureInfo.GetCultureInfo("en-US"));
             
             componentUpdates.Add("Agenda", new Dictionary<string, (object newValue, FieldType fieldType)>
             {
-                { "Title", ("- Update\n\n" + weatherInfo, FieldType.TextField) }
+                { "Title", ("- Update\n\n" + weatherInfo + "\n\n" + date, FieldType.TextField) }
             });
         }
 
