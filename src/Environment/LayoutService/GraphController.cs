@@ -30,7 +30,7 @@ public class GraphController : Controller
 
         if (graphqlRequest.Query.Contains("rendered"))
         {
-            var cacheKey = GenerateCacheKey(graphqlRequest.Query);
+            var cacheKey = GenerateCacheKey(graphqlRequest.Query + graphqlRequest.Variables + graphqlRequest.OperationName);
 
             if (!_cache.TryGetValue(cacheKey, out object cachedResult))
             {
