@@ -39,5 +39,6 @@
     <PackageReference Update="StyleCop.Analyzers" Version="1.1.118" />
     <PackageReference Update="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageReference Update="Markdig" Version="0.34.0" />
+    <PackageReference Update="Sitecore.AspNetCore.SDK.LayoutService.Client" Version="0.0.7" />
   </ItemGroup>
 </Project>
