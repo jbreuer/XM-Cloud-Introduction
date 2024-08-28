@@ -70,7 +70,7 @@ namespace LayoutService
                 
                 endpoints.MapControllerRoute(
                     "graph",
-                    "graph",
+                    "/sitecore/api/graph/edge",
                     new { controller = "Graph", action = "Index" }
                 );
             });
