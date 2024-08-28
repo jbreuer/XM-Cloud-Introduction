@@ -117,6 +117,24 @@ public class GraphController : Controller
                 { "Title", ("- Update\n\n" + weatherInfo + "\n\n" + date, FieldType.TextField) }
             });
         }
+        
+        if (itemId != null && itemId.Equals("94de9ac3-a9f7-40ab-ae90-acda364b9c40", StringComparison.InvariantCultureIgnoreCase))
+        {
+            componentUpdates.Add("HeroBig", new Dictionary<string, (object newValue, FieldType fieldType)>
+            {
+                { "HeroTitle", (" updated from core big", FieldType.TextField) },
+                { "HeroDescription", (" With extra text big.", FieldType.RichTextField) }
+            });
+        }
+        
+        if (itemId != null && itemId.Equals("0d97b45d-c589-4495-a495-9aaff4fbd2c3", StringComparison.InvariantCultureIgnoreCase))
+        {
+            componentUpdates.Add("HeroMedium", new Dictionary<string, (object newValue, FieldType fieldType)>
+            {
+                { "HeroTitle", (" updated from core medium", FieldType.TextField) },
+                { "HeroDescription", (" With extra text medium.", FieldType.RichTextField) }
+            });
+        }
 
         foreach (var componentName in componentUpdates.Keys)
         {
