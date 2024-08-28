@@ -7,6 +7,7 @@
 
 # IDE Settings
 .vscode
+.idea
 
 # Environment files
 .env
