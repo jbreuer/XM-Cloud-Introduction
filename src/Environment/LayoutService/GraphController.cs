@@ -34,8 +34,7 @@ public class GraphController : Controller
 
             if (!_cache.TryGetValue(cacheKey, out object cachedResult))
             {
-                cachedResult = await _layoutServiceHelper.FetchGraphQLDataAsync<LayoutQueryResponse>(graphqlRequest,
-                    Request.Headers);
+                cachedResult = await _layoutServiceHelper.FetchGraphQLDataAsync<LayoutQueryResponse>(graphqlRequest, Request.Headers);
                 var layoutQueryResponse = cachedResult as GraphQLResponse<LayoutQueryResponse>;
                 var renderedJson = layoutQueryResponse?.Data?.Layout?.Item?.Rendered.ToString();
 
@@ -44,8 +43,7 @@ public class GraphController : Controller
                     var layoutContent = _layoutServiceHelper.ProcessLayoutContentAsync(renderedJson);
                     await ApplyFieldUpdates(layoutContent);
 
-                    var serializedContent =
-                        JsonSerializer.Serialize(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
+                    var serializedContent = JsonSerializer.Serialize(layoutContent, _layoutServiceHelper.CreateSerializerSettings());
                     layoutQueryResponse.Data.Layout.Item.Rendered = JsonDocument.Parse(serializedContent).RootElement;
                 }
                 
