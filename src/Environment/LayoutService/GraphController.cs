@@ -93,28 +93,28 @@ public class GraphController : Controller
         
         var componentUpdates = new Dictionary<string, Dictionary<string, (object newValue, FieldType fieldType)>>();
         
-        if (itemId != null && itemId.Equals("6f42eb7e-7dda-4ccd-b116-a136d10b0e3d", StringComparison.InvariantCultureIgnoreCase))
+        if (itemId != null && itemId.Equals("08762520-fa2d-410a-ba44-f02a0f4b40f9", StringComparison.InvariantCultureIgnoreCase))
         {
             componentUpdates.Add("Hero", new Dictionary<string, (object newValue, FieldType fieldType)>
             {
-                { "Text", (" updated text from LayoutService", FieldType.TextField) }
+                { "Headline", (" updated text from LayoutService", FieldType.TextField) }
             });
             
-            componentUpdates.Add("CTA", new Dictionary<string, (object newValue, FieldType fieldType)>
+            componentUpdates.Add("ActionBanner", new Dictionary<string, (object newValue, FieldType fieldType)>
             {
-                { "Link", ("- Links can also be updated", FieldType.HyperLinkField) }
+                { "CallToAction", ("- Links can also be updated", FieldType.HyperLinkField) }
             });
         }
 
-        if (itemId != null && itemId.Equals("bf345f94-f106-4d63-b9c6-d79c1cf0abb5", StringComparison.InvariantCultureIgnoreCase))
+        if (itemId != null && itemId.Equals("09f61b6b-0ba3-4d94-9c5e-c2e51b7a3951", StringComparison.InvariantCultureIgnoreCase))
         {
             var city = "Amsterdam";
             var weatherInfo = await _weatherService.GetCurrentWeatherAsync(city);
             var date = DateTime.Now.ToString("F", CultureInfo.GetCultureInfo("en-US"));
             
-            componentUpdates.Add("Agenda", new Dictionary<string, (object newValue, FieldType fieldType)>
+            componentUpdates.Add("Hero", new Dictionary<string, (object newValue, FieldType fieldType)>
             {
-                { "Title", ("- Update\n\n" + weatherInfo + "\n\n" + date, FieldType.TextField) }
+                { "Headline", ("- Update\n\n" + weatherInfo + "\n\n" + date, FieldType.TextField) }
             });
         }
         

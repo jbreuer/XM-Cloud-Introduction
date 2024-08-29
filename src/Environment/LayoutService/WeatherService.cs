@@ -27,7 +27,7 @@ public class WeatherService
             string temperature = weatherJson.GetProperty("main").GetProperty("temp").GetDecimal().ToString(CultureInfo.InvariantCulture);
             string description = weatherJson.GetProperty("weather")[0].GetProperty("description").GetString() ?? string.Empty;
 
-            return $"Current weather in {city}: {temperature}°C {description}";
+            return $"Weather in {city}: {temperature}°C {description}";
         }
         catch (Exception ex)
         {
