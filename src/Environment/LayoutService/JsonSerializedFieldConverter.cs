@@ -9,20 +9,7 @@ namespace LayoutService
     {
         public override void Write(Utf8JsonWriter writer, JsonSerializedField value, JsonSerializerOptions options)
         {
-            // Use reflection to get the private _json field
-            var jsonFieldInfo = typeof(JsonSerializedField).GetField("_json", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (jsonFieldInfo != null)
-            {
-                var json = jsonFieldInfo.GetValue(value) as string;
-                if (json != null)
-                {
-                    writer.WriteRawValue(json);
-                    return;
-                }
-            }
-
-            // Fallback if reflection fails
-            writer.WriteStringValue("Error: Unable to access the JSON data");
+            writer.WriteRawValue(value.GetRawValue());
         }
 
         public override JsonSerializedField Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
