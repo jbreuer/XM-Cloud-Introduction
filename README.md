@@ -1,6 +1,9 @@
 # 📝 Introduction
 **This repository is not a Starter Kit or Template Solution**, you should not clone this repository for the purposes of starting a new Sitecore project. This is intended as a reference example of a Sitecore XM Cloud implementation.
 
+> [!TIP]
+> This is a fork of the [Sitecore XM-Cloud-Introduction repository](https://github.com/Sitecore/XM-Cloud-Introduction). It adds the Sitecore Layout Service on ASP.NET Core. See this [pull request](https://github.com/jbreuer/XM-Cloud-Introduction/pull/1) for all the changes. You can also find more info in [this blog](https://www.jeroenbreuer.nl/blog/running-the-sitecore-layout-service-on-asp-net-core/).
+
 This repository contains the codebase for a series of sites managed by the Technical Marketing Team at Sitecore. You will find the following sites in this repository:
 - [Sitecore MVP Site](https://mvp.sitecore.com)
 - [SUGCON EU Site](https://europe.sugcon.events)

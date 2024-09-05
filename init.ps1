@@ -176,7 +176,6 @@ FETCH_WITH="GraphQL"
 else {
     Write-Host "Cleaning any files used to run Edge Mode without Docker" -ForegroundColor Green
     git restore 'src/Project/MvpSite/rendering/appsettings.Development.json'
-    if(Test-Path './src/Project/Sugcon2024/Sugcon/.env') { Remove-Item -Path './src/Project/Sugcon2024/Sugcon/.env' -Force }
 }
 
 ###############

@@ -93,6 +93,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BehavioralPersonalization",
 		Feature\BehavioralPersonalization\BehavioralPersonalization.module.json = Feature\BehavioralPersonalization\BehavioralPersonalization.module.json
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LayoutService", "Environment\LayoutService\LayoutService.csproj", "{0DF498AD-44EC-4C96-9CE5-314AC3F003AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -139,6 +141,10 @@ Global
 		{B4EC41A8-ECA9-488C-88A0-2B6F91584B02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4EC41A8-ECA9-488C-88A0-2B6F91584B02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4EC41A8-ECA9-488C-88A0-2B6F91584B02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DF498AD-44EC-4C96-9CE5-314AC3F003AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DF498AD-44EC-4C96-9CE5-314AC3F003AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DF498AD-44EC-4C96-9CE5-314AC3F003AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DF498AD-44EC-4C96-9CE5-314AC3F003AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -165,6 +171,7 @@ Global
 		{8E8859F4-6EA3-463D-B8DE-B151C505A691} = {4736C040-62A2-4E10-A376-0FD4B8B72E8D}
 		{A3BB19D0-CE43-4EE3-8B52-72E95B19E5A4} = {EE03412B-647E-416F-84A1-427E692BBBDB}
 		{FA0F7310-D73E-40CE-8918-3D9B0B929EC8} = {EE03412B-647E-416F-84A1-427E692BBBDB}
+		{0DF498AD-44EC-4C96-9CE5-314AC3F003AD} = {34CC9337-BC03-4C14-A57A-FD29DEE5A9B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7A7C4987-3A11-41A9-8915-5457EF7B5A6F}
