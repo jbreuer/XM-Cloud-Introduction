@@ -6,7 +6,7 @@ import {
   useComponentProps,
   withDatasourceCheck
 } from '@sitecore-jss/sitecore-jss-nextjs';
-import useSWR from 'swr';
+import useSWR, {SWRConfig} from 'swr';
 import { ComponentProps } from 'lib/component-props';
 
 interface Fields {
@@ -65,6 +65,16 @@ const AgendaComponent = (props: AgendaProps): JSX.Element => {
   );
 };
 
+const AgendaWithSWRConfig = (props: AgendaProps & { fallback: any }) => {
+  const componentProps = useComponentProps(props.rendering.uid) || {};
+  //console.log('componentProps', componentProps);
+  //console.log('fallback', props.fallback);
+  return (
+      <SWRConfig value={{ fallback: componentProps.props.fallback }}>
+        <AgendaComponent {...props} />
+      </SWRConfig>
+  );
+};
 export const getServerSideProps: GetServerSideComponentProps = async (rendering, layoutData, context) => {
   // console.log('getServerSideProps');
   // console.dir(layoutData, { depth: null });
@@ -94,5 +104,5 @@ export const getStaticProps: GetStaticComponentProps = async (_, layoutData, con
   };
 };
 
-export const Default = withDatasourceCheck()<AgendaProps>(AgendaComponent);
+export const Default = withDatasourceCheck()<AgendaProps>(AgendaWithSWRConfig);
 
