@@ -26,30 +26,20 @@ const AgendaDefaultComponent = (props: AgendaProps): JSX.Element => (
 );
 
 const AgendaComponent = (props: AgendaProps): JSX.Element => {
-  const id = props.params.RenderingIdentifier;
+  console.log('Received data in component:', props.data); // Log data received in component
 
-  // If SessionizeUrl is not provided, render the default component
-  if (!props.fields.SessionizeUrl?.value) {
-    return <AgendaDefaultComponent {...props} />;
-  }
-  
-  // Handle errors
   if (props.error) {
     return <div>Failed to load...</div>;
   }
 
-  // Handle loading state (though with SSR, data should be present)
   if (!props.data) {
     return <div>Loading...</div>;
   }
 
+  // Check if the data is valid HTML
   return (
-      <div className={`component agenda ${props.params.styles}`} id={id ? id : undefined}>
-        <div className="component-content">
-          <p>Above HTML</p>
-          <InnerHTML html={props.data}/>
-          <p>Below HTML</p>
-        </div>
+      <div>
+        <div dangerouslySetInnerHTML={{ __html: props.data }}></div> {/* Render it */}
       </div>
   );
 };
