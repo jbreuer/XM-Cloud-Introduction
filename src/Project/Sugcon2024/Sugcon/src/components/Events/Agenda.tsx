@@ -17,6 +17,8 @@ type AgendaProps = ComponentProps & {
   fields: Fields;
 };
 
+const fetcher = (url: string) => fetch(url).then((res) => res.text());
+
 const AgendaDefaultComponent = (props: AgendaProps): JSX.Element => (
     <div className={`component promo ${props.params.styles}`}>
       <div className="component-content">
@@ -32,11 +34,11 @@ const AgendaComponent = (props: AgendaProps): JSX.Element => {
   
   const componentProps = useComponentProps(props.rendering.uid) || {};
 
-  console.dir(componentProps, { depth: null });
+  // console.dir(componentProps, { depth: null });
 
-  const fetcher = (url: string) => fetch(url).then((res) => res.text());
+  const api = props.fields.SessionizeUrl.value;
   const { data, error } = useSWR(
-      props.fields.SessionizeUrl.value ? props.fields.SessionizeUrl.value : null,
+      api,
       fetcher
   );
 
@@ -63,12 +65,23 @@ const AgendaComponent = (props: AgendaProps): JSX.Element => {
   );
 };
 
-export const getServerSideProps: GetServerSideComponentProps = async (_, layoutData, context) => {
-  console.log('getServerSideProps');
-  // console.log(layoutData, layoutData);
+export const getServerSideProps: GetServerSideComponentProps = async (rendering, layoutData, context) => {
+  // console.log('getServerSideProps');
+  // console.dir(layoutData, { depth: null });
+  // console.dir(rendering?.fields?.SessionizeUrl?.value, { depth: null });
   // console.log(context, context);
+
+  const api = rendering?.fields?.SessionizeUrl?.value;
+  const data = await fetcher(api);
+  
+  // console.log('data', data);
+
   return {
-    assetDetailsServer: 'Agenda test server',
+    props: {
+      fallback: {
+        [api]: data
+      }
+    }
   };
 };
 
