@@ -33,8 +33,6 @@ const AgendaComponent = (props: AgendaProps): JSX.Element => {
     return <AgendaDefaultComponent {...props} />;
   }
   
-  console.log('props', props);
-
   // Handle errors
   if (props.error) {
     return <div>Failed to load...</div>;
@@ -48,7 +46,9 @@ const AgendaComponent = (props: AgendaProps): JSX.Element => {
   return (
       <div className={`component agenda ${props.params.styles}`} id={id ? id : undefined}>
         <div className="component-content">
-          <InnerHTML html={props.data} />
+          <p>Above HTML</p>
+          <InnerHTML html={props.data}/>
+          <p>Below HTML</p>
         </div>
       </div>
   );
